@@ -9,12 +9,20 @@ import InventoryTable from "../components/tables/InventoryTable";
 import { useInventory } from "../context/InventoryContext";
 import { uploadInventoryImage } from "../lib/storage";
 import type { InventoryItem } from "../types/inventory";
+import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
+import { useToast } from "../components/ui/toast";
+import { ExportButton } from "../components/ui/export-button";
+import { exportToCSV, formatCurrencyForExport } from "../lib/export";
 
 const InventoryPage = () => {
   const { items, rooms, allRooms, createItem, updateItem, deleteItem } = useInventory();
+  const { addToast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -57,16 +65,67 @@ const InventoryPage = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteItem = async (item: InventoryItem) => {
-    const confirmed = window.confirm(`Hapus data barang "${item.name}"?`);
-    if (!confirmed) return;
+  const handleDeleteItem = (item: InventoryItem) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await deleteItem(item.id);
+      await deleteItem(itemToDelete.id);
+      addToast({
+        type: "success",
+        title: "Berhasil",
+        description: `Barang "${itemToDelete.name}" telah dihapus.`,
+      });
     } catch (error) {
       console.error("Gagal menghapus barang", error);
-      alert("Gagal menghapus barang. Silakan coba lagi.");
+      addToast({
+        type: "error",
+        title: "Gagal",
+        description: "Gagal menghapus barang. Silakan coba lagi.",
+      });
+    } finally {
+      setIsDeleting(false);
+      setItemToDelete(null);
+      setDeleteDialogOpen(false);
     }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleExportInventory = () => {
+    const headers = [
+      "Kode Barang",
+      "Nama Barang",
+      "Merek",
+      "Spesifikasi",
+      "Jumlah",
+      "Harga Total",
+      "Sumber",
+      "Ruangan",
+      "Kondisi"
+    ];
+
+    const exportData = items.map(item => ({
+      "Kode Barang": item.code,
+      "Nama Barang": item.name,
+      "Merek": item.brand,
+      "Spesifikasi": item.specification,
+      "Jumlah": item.quantity,
+      "Harga Total": formatCurrencyForExport(item.totalPrice),
+      "Sumber": item.source,
+      "Ruangan": rooms.find(room => room.id === item.roomId)?.name || "",
+      "Kondisi": item.condition
+    }));
+
+    exportToCSV(exportData, "data-inventaris.csv", headers);
   };
 
   const defaultValues = selectedItem
@@ -90,41 +149,54 @@ const InventoryPage = () => {
           <h2 className="text-2xl font-semibold text-foreground">Inventaris Barang</h2>
           <p className="text-sm text-muted-foreground">Kelola seluruh aset barang sekolah beserta kondisi terkini.</p>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setSelectedItem(null);
-              setDialogMode("create");
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                handleCreateClick();
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Barang
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{dialogMode === "edit" ? "Edit Barang" : "Tambah Barang"}</DialogTitle>
-            </DialogHeader>
-            <InventoryItemForm
-              defaultValues={defaultValues}
-              rooms={allRooms.map((room) => ({ id: room.id, name: room.name }))}
-              onSubmit={handleSubmit}
-              submitLabel={dialogMode === "edit" ? "Perbarui Barang" : "Simpan Barang"}
-              existingPhotoUrl={selectedItem?.photoUrl}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-3">
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setSelectedItem(null);
+                setDialogMode("create");
+              }
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => {
+                  handleCreateClick();
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah Barang
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{dialogMode === "edit" ? "Edit Barang" : "Tambah Barang"}</DialogTitle>
+              </DialogHeader>
+              <InventoryItemForm
+                defaultValues={defaultValues}
+                rooms={allRooms.map((room) => ({ id: room.id, name: room.name }))}
+                onSubmit={handleSubmit}
+                submitLabel={dialogMode === "edit" ? "Perbarui Barang" : "Simpan Barang"}
+                existingPhotoUrl={selectedItem?.photoUrl}
+              />
+            </DialogContent>
+          </Dialog>
+          <ExportButton onExport={handleExportInventory} />
+        </div>
       </div>
       <InventoryTable items={items} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Barang"
+        description="Apakah Anda yakin ingin menghapus barang '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
+        itemName={itemToDelete?.name || ""}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

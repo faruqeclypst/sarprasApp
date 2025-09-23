@@ -27,7 +27,7 @@ const InventoryLayout = ({ children }: InventoryLayoutProps) => {
         isMobileOpen={isMobileSidebarOpen}
         onClose={closeMobileSidebar}
       />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0">
         <TopNavigation onMenuClick={toggleMobileSidebar} />
         <motion.main
           key={location.pathname}
@@ -35,9 +35,11 @@ const InventoryLayout = ({ children }: InventoryLayoutProps) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -16 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className="flex-1 overflow-y-auto p-6"
+          className="flex-1 overflow-y-auto overflow-x-hidden p-6"
         >
-          {children ?? <Outlet />}
+          <div className="w-full overflow-hidden">
+            {children ?? <Outlet />}
+          </div>
         </motion.main>
       </div>
     </div>

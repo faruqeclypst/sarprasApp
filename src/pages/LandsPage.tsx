@@ -9,12 +9,20 @@ import { useInventory } from "../context/InventoryContext";
 import { uploadInventoryImage } from "../lib/storage";
 import type { Land } from "../types/inventory";
 import type { LandFormValues } from "../components/forms/schemas";
+import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
+import { useToast } from "../components/ui/toast";
+import { ExportButton } from "../components/ui/export-button";
+import { exportToCSV, formatCurrencyForExport, formatDateForExport } from "../lib/export";
 
 const LandsPage = () => {
   const { lands, createLand, updateLand, deleteLand } = useInventory();
+  const { addToast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [selectedLand, setSelectedLand] = useState<Land | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [landToDelete, setLandToDelete] = useState<Land | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -34,7 +42,11 @@ const LandsPage = () => {
           photoUrl = uploadResult.url;
         } catch (uploadError) {
           console.error("Error uploading photo:", uploadError);
-          alert("Gagal mengunggah foto. Silakan coba lagi.");
+          addToast({
+            type: "error",
+            title: "Gagal",
+            description: "Gagal mengunggah foto. Silakan coba lagi.",
+          });
           return;
         }
       }
@@ -61,7 +73,11 @@ const LandsPage = () => {
       closeDialog();
     } catch (error) {
       console.error("Error saving land:", error);
-      alert("Gagal menyimpan data tanah. Silakan coba lagi.");
+      addToast({
+        type: "error",
+        title: "Gagal",
+        description: "Gagal menyimpan data tanah. Silakan coba lagi.",
+      });
     }
   };
 
@@ -76,16 +92,67 @@ const LandsPage = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeleteLand = async (land: Land) => {
-    const confirmed = window.confirm(`Hapus data tanah "${land.locationName}"?`);
-    if (!confirmed) return;
+  const handleDeleteLand = (land: Land) => {
+    setLandToDelete(land);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!landToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await deleteLand(land.id);
+      await deleteLand(landToDelete.id);
+      addToast({
+        type: "success",
+        title: "Berhasil",
+        description: `Data tanah "${landToDelete.locationName}" telah dihapus.`,
+      });
     } catch (error) {
       console.error("Gagal menghapus tanah", error);
-      alert("Gagal menghapus tanah. Silakan coba lagi.");
+      addToast({
+        type: "error",
+        title: "Gagal",
+        description: "Gagal menghapus tanah. Silakan coba lagi.",
+      });
+    } finally {
+      setIsDeleting(false);
+      setLandToDelete(null);
+      setDeleteDialogOpen(false);
     }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setLandToDelete(null);
+  };
+
+  const handleExportLands = () => {
+    const headers = [
+      "Nama Lokasi",
+      "Kode Lokasi",
+      "Luas Area",
+      "Tahun Perolehan",
+      "Alamat",
+      "Nomor Sertifikat",
+      "Asal",
+      "Harga",
+      "Keterangan"
+    ];
+
+    const exportData = lands.map(land => ({
+      "Nama Lokasi": land.locationName,
+      "Kode Lokasi": land.locationCode,
+      "Luas Area": `${land.area} m²`,
+      "Tahun Perolehan": land.acquisitionYear,
+      "Alamat": land.address,
+      "Nomor Sertifikat": land.certificateNumber,
+      "Asal": land.origin,
+      "Harga": formatCurrencyForExport(land.price),
+      "Keterangan": land.description || ""
+    }));
+
+    exportToCSV(exportData, "data-tanah.csv", headers);
   };
 
   const defaultValues = selectedLand
@@ -110,40 +177,53 @@ const LandsPage = () => {
           <h2 className="text-2xl font-semibold text-foreground">Data Tanah</h2>
           <p className="text-sm text-muted-foreground">Catat aset tanah sekolah dengan detail kepemilikan.</p>
         </div>
-        <Dialog
-          open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) {
-              setSelectedLand(null);
-              setDialogMode("create");
-            }
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => {
-                handleCreateClick();
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Tanah
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{dialogMode === "edit" ? "Edit Data Tanah" : "Tambah Data Tanah"}</DialogTitle>
-            </DialogHeader>
-            <LandForm
-              defaultValues={defaultValues}
-              onSubmit={handleSubmit}
-              submitLabel={dialogMode === "edit" ? "Perbarui Tanah" : "Simpan Tanah"}
-              existingPhotoUrl={selectedLand?.photoUrl}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-3">
+          <Dialog
+            open={isDialogOpen}
+            onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) {
+                setSelectedLand(null);
+                setDialogMode("create");
+              }
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => {
+                  handleCreateClick();
+                }}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah Tanah
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{dialogMode === "edit" ? "Edit Data Tanah" : "Tambah Data Tanah"}</DialogTitle>
+              </DialogHeader>
+              <LandForm
+                defaultValues={defaultValues}
+                onSubmit={handleSubmit}
+                submitLabel={dialogMode === "edit" ? "Perbarui Tanah" : "Simpan Tanah"}
+                existingPhotoUrl={selectedLand?.photoUrl}
+              />
+            </DialogContent>
+          </Dialog>
+          <ExportButton onExport={handleExportLands} />
+        </div>
       </div>
       <LandsTable lands={lands} onEdit={handleEditLand} onDelete={handleDeleteLand} />
+
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Hapus Tanah"
+        description="Apakah Anda yakin ingin menghapus data tanah '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
+        itemName={landToDelete?.locationName || ""}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

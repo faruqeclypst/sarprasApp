@@ -1,4 +1,4 @@
-import { Menu, Search } from "lucide-react";
+import { LogOut, Menu, Search } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useInventory } from "../../context/InventoryContext";
@@ -58,8 +58,9 @@ const TopNavigation = ({ onMenuClick }: TopNavigationProps) => {
           <AvatarImage src={user?.photoURL || undefined} alt={displayName} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
-        <Button variant="outline" size="sm" onClick={handleSignOut}>
-          Keluar
+        <Button variant="destructive" size="sm" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
         </Button>
       </div>
     </header>

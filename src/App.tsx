@@ -5,6 +5,7 @@ import InventoryLayout from "./components/layout/InventoryLayout";
 import LoadingScreen from "./components/layout/LoadingScreen";
 import { useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
+import { ToastProvider } from "./components/ui/toast";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const InventoryPage = lazy(() => import("./pages/InventoryPage"));
@@ -20,21 +21,23 @@ const App = () => {
   }
 
   return (
-    <Suspense fallback={<LoadingScreen />}>
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route
-          element={user ? <InventoryLayout /> : <Navigate to="/login" replace />}
-        >
-          <Route index element={<DashboardPage />} />
-          <Route path="/inventaris" element={<InventoryPage />} />
-          <Route path="/ruangan" element={<RoomsPage />} />
-          <Route path="/tanah" element={<LandsPage />} />
-          <Route path="/peminjaman" element={<LoansPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
-      </Routes>
-    </Suspense>
+    <ToastProvider>
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes>
+          <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+          <Route
+            element={user ? <InventoryLayout /> : <Navigate to="/login" replace />}
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="/inventaris" element={<InventoryPage />} />
+            <Route path="/ruangan" element={<RoomsPage />} />
+            <Route path="/tanah" element={<LandsPage />} />
+            <Route path="/peminjaman" element={<LoansPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
+        </Routes>
+      </Suspense>
+    </ToastProvider>
   );
 };
 
