@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import FileDropInput from "./FileDropInput";
 import FormField from "./FormField";
 import { RoomFormValues, roomSchema } from "./schemas";
 
@@ -13,9 +14,10 @@ interface RoomFormProps {
   defaultValues?: Partial<RoomFormValues>;
   onSubmit: (values: RoomFormValues) => Promise<void>;
   submitLabel?: string;
+  existingPhotoUrl?: string;
 }
 
-const RoomForm = ({ defaultValues, onSubmit, submitLabel }: RoomFormProps) => {
+const RoomForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: RoomFormProps) => {
   const {
     register,
     control,
@@ -35,12 +37,14 @@ const RoomForm = ({ defaultValues, onSubmit, submitLabel }: RoomFormProps) => {
   });
 
   useEffect(() => {
-    reset((prev) => ({ ...prev, ...defaultValues }));
+    reset((prev) => ({ ...prev, ...defaultValues, photoFile: undefined }));
   }, [defaultValues, reset]);
 
   const submitHandler = async (values: RoomFormValues) => {
     await onSubmit(values);
-    reset();
+    if (!defaultValues || Object.keys(defaultValues).length === 0) {
+      reset();
+    }
   };
 
   return (
@@ -69,11 +73,11 @@ const RoomForm = ({ defaultValues, onSubmit, submitLabel }: RoomFormProps) => {
             control={control}
             name="photoFile"
             render={({ field }) => (
-              <Input
+              <FileDropInput
                 id="photoFile"
-                type="file"
-                accept="image/*"
-                onChange={(event) => field.onChange(event.target.files?.[0])}
+                value={field.value}
+                onChange={field.onChange}
+                existingUrl={existingPhotoUrl}
               />
             )}
           />

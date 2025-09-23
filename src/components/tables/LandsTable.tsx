@@ -1,11 +1,14 @@
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { Land } from "../../types/inventory";
 
 interface LandsTableProps {
   lands: Land[];
+  onEdit: (land: Land) => void;
+  onDelete: (land: Land) => void;
 }
 
-const LandsTable = ({ lands }: LandsTableProps) => {
+const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
   return (
     <Card>
       <CardHeader>
@@ -22,12 +25,13 @@ const LandsTable = ({ lands }: LandsTableProps) => {
               <th className="px-4 py-3">Alamat</th>
               <th className="px-4 py-3">No. Sertifikat</th>
               <th className="px-4 py-3">Harga</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {lands.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data tanah.
                 </td>
               </tr>
@@ -41,6 +45,21 @@ const LandsTable = ({ lands }: LandsTableProps) => {
                   <td className="px-4 py-3 text-muted-foreground">{land.address}</td>
                   <td className="px-4 py-3">{land.certificateNumber}</td>
                   <td className="px-4 py-3">Rp {land.price.toLocaleString("id-ID")}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => onEdit(land)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => onDelete(land)}
+                      >
+                        Hapus
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}

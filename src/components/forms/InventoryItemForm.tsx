@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import FileDropInput from "./FileDropInput";
 import FormField from "./FormField";
 import { InventoryItemFormValues, inventoryItemSchema } from "./schemas";
 
@@ -14,9 +15,10 @@ interface InventoryItemFormProps {
   rooms: { id: string; name: string }[];
   onSubmit: (values: InventoryItemFormValues) => Promise<void>;
   submitLabel?: string;
+  existingPhotoUrl?: string;
 }
 
-const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel }: InventoryItemFormProps) => {
+const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel, existingPhotoUrl }: InventoryItemFormProps) => {
   const hasRooms = rooms.length > 0;
   const {
     register,
@@ -42,7 +44,7 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel }: Inve
   });
 
   useEffect(() => {
-    reset((prev) => ({ ...prev, ...defaultValues }));
+    reset((prev) => ({ ...prev, ...defaultValues, photoFile: undefined }));
   }, [defaultValues, reset]);
   useEffect(() => {
     if (rooms.length > 0) {
@@ -52,7 +54,9 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel }: Inve
 
   const submitHandler = async (values: InventoryItemFormValues) => {
     await onSubmit(values);
-    reset();
+    if (!defaultValues || Object.keys(defaultValues).length === 0) {
+      reset();
+    }
   };
 
   return (
@@ -112,11 +116,11 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel }: Inve
             control={control}
             name="photoFile"
             render={({ field }) => (
-              <Input
+              <FileDropInput
                 id="photoFile"
-                type="file"
-                accept="image/*"
-                onChange={(event) => field.onChange(event.target.files?.[0])}
+                value={field.value}
+                onChange={field.onChange}
+                existingUrl={existingPhotoUrl}
               />
             )}
           />

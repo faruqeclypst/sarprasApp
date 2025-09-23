@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import FileDropInput from "./FileDropInput";
 import FormField from "./FormField";
 import { LoanFormValues, loanSchema } from "./schemas";
 
@@ -14,9 +15,10 @@ interface LoanFormProps {
   items: { id: string; name: string }[];
   onSubmit: (values: LoanFormValues) => Promise<void>;
   submitLabel?: string;
+  existingPhotoUrl?: string;
 }
 
-const LoanForm = ({ defaultValues, items, onSubmit, submitLabel }: LoanFormProps) => {
+const LoanForm = ({ defaultValues, items, onSubmit, submitLabel, existingPhotoUrl }: LoanFormProps) => {
   const hasItems = items.length > 0;
   const {
     register,
@@ -43,7 +45,7 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel }: LoanFormProps
   const itemId = watch("itemId");
 
   useEffect(() => {
-    reset((prev) => ({ ...prev, ...defaultValues }));
+    reset((prev) => ({ ...prev, ...defaultValues, photoFile: undefined }));
   }, [defaultValues, reset]);
 
   useEffect(() => {
@@ -62,7 +64,9 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel }: LoanFormProps
 
   const submitHandler = async (values: LoanFormValues) => {
     await onSubmit(values);
-    reset();
+    if (!defaultValues || Object.keys(defaultValues).length === 0) {
+      reset();
+    }
   };
 
   return (
@@ -100,11 +104,11 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel }: LoanFormProps
             control={control}
             name="photoFile"
             render={({ field }) => (
-              <Input
+              <FileDropInput
                 id="photoFile"
-                type="file"
-                accept="image/*"
-                onChange={(event) => field.onChange(event.target.files?.[0])}
+                value={field.value}
+                onChange={field.onChange}
+                existingUrl={existingPhotoUrl}
               />
             )}
           />

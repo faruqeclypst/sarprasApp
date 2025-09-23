@@ -1,12 +1,15 @@
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { Loan } from "../../types/inventory";
 
 interface LoansTableProps {
   loans: Loan[];
+  onEdit: (loan: Loan) => void;
+  onDelete: (loan: Loan) => void;
 }
 
-const LoansTable = ({ loans }: LoansTableProps) => {
+const LoansTable = ({ loans, onEdit, onDelete }: LoansTableProps) => {
   return (
     <Card>
       <CardHeader>
@@ -22,12 +25,13 @@ const LoansTable = ({ loans }: LoansTableProps) => {
               <th className="px-4 py-3">Tgl Kembali</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Catatan</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loans.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data peminjaman.
                 </td>
               </tr>
@@ -47,6 +51,21 @@ const LoansTable = ({ loans }: LoansTableProps) => {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{loan.notes ?? "-"}</td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => onEdit(loan)}>
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => onDelete(loan)}
+                        >
+                          Hapus
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })

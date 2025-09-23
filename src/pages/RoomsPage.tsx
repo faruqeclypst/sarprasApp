@@ -8,28 +8,74 @@ import { Button } from "../components/ui/button";
 import RoomsTable from "../components/tables/RoomsTable";
 import { useInventory } from "../context/InventoryContext";
 import { uploadInventoryImage } from "../lib/storage";
+import type { Room } from "../types/inventory";
 
 const RoomsPage = () => {
-  const { rooms, createRoom } = useInventory();
+  const { rooms, createRoom, updateRoom, deleteRoom } = useInventory();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedRoom(null);
+    setDialogMode("create");
+  };
 
   const handleSubmit = async (values: RoomFormValues) => {
     try {
       const { photoFile, ...rest } = values;
-      let photoUrl: string | undefined;
+      let photoUrl = dialogMode === "edit" ? selectedRoom?.photoUrl : undefined;
 
       if (photoFile) {
         const uploadResult = await uploadInventoryImage("inventory/rooms", photoFile);
         photoUrl = uploadResult.url;
       }
 
-      await createRoom({ ...rest, photoUrl });
-      setIsDialogOpen(false);
+      if (dialogMode === "edit" && selectedRoom) {
+        await updateRoom(selectedRoom.id, { ...rest, photoUrl });
+      } else {
+        await createRoom({ ...rest, photoUrl });
+      }
+
+      closeDialog();
     } catch (error) {
       console.error("Gagal menyimpan ruangan", error);
       alert("Gagal menyimpan ruangan. Pastikan koneksi dan konfigurasi penyimpanan sudah benar.");
     }
   };
+
+  const handleCreateClick = () => {
+    setDialogMode("create");
+    setSelectedRoom(null);
+  };
+
+  const handleEditRoom = (room: Room) => {
+    setDialogMode("edit");
+    setSelectedRoom(room);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteRoom = async (room: Room) => {
+    const confirmed = window.confirm(`Hapus data ruang "${room.name}"?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteRoom(room.id);
+    } catch (error) {
+      console.error("Gagal menghapus ruangan", error);
+      alert("Gagal menghapus ruangan. Silakan coba lagi.");
+    }
+  };
+
+  const defaultValues = selectedRoom
+    ? {
+        name: selectedRoom.name,
+        buildingCode: selectedRoom.buildingCode,
+        condition: selectedRoom.condition,
+        notes: selectedRoom.notes ?? "",
+      }
+    : undefined;
 
   return (
     <div className="space-y-6">
@@ -38,22 +84,40 @@ const RoomsPage = () => {
           <h2 className="text-2xl font-semibold text-foreground">Data Ruangan</h2>
           <p className="text-sm text-muted-foreground">Kelola informasi kondisi dan dokumentasi ruang.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+              setSelectedRoom(null);
+              setDialogMode("create");
+            }
+          }}
+        >
           <DialogTrigger asChild>
-            <Button>
+            <Button
+              onClick={() => {
+                handleCreateClick();
+              }}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Tambah Ruang
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Tambah Ruang</DialogTitle>
+              <DialogTitle>{dialogMode === "edit" ? "Edit Ruang" : "Tambah Ruang"}</DialogTitle>
             </DialogHeader>
-            <RoomForm onSubmit={handleSubmit} submitLabel="Simpan Ruang" />
+            <RoomForm
+              defaultValues={defaultValues}
+              onSubmit={handleSubmit}
+              submitLabel={dialogMode === "edit" ? "Perbarui Ruang" : "Simpan Ruang"}
+              existingPhotoUrl={selectedRoom?.photoUrl}
+            />
           </DialogContent>
         </Dialog>
       </div>
-      <RoomsTable rooms={rooms} />
+      <RoomsTable rooms={rooms} onEdit={handleEditRoom} onDelete={handleDeleteRoom} />
     </div>
   );
 };

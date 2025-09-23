@@ -1,10 +1,13 @@
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { InventoryItem, Room } from "../../types/inventory";
 
 interface InventoryTableProps {
   items: InventoryItem[];
   rooms: Room[];
+  onEdit: (item: InventoryItem) => void;
+  onDelete: (item: InventoryItem) => void;
 }
 
 const conditionLabels: Record<InventoryItem["condition"], string> = {
@@ -13,7 +16,7 @@ const conditionLabels: Record<InventoryItem["condition"], string> = {
   rusak: "Rusak",
 };
 
-const InventoryTable = ({ items, rooms }: InventoryTableProps) => {
+const InventoryTable = ({ items, rooms, onEdit, onDelete }: InventoryTableProps) => {
   const roomLookup = new Map(rooms.map((room) => [room.id, room.name]));
 
   return (
@@ -36,12 +39,13 @@ const InventoryTable = ({ items, rooms }: InventoryTableProps) => {
               <th className="px-4 py-3">Sumber</th>
               <th className="px-4 py-3">Ruang</th>
               <th className="px-4 py-3">Kondisi</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={9} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data barang.
                 </td>
               </tr>
@@ -64,6 +68,21 @@ const InventoryTable = ({ items, rooms }: InventoryTableProps) => {
                     <Badge variant={item.condition === "rusak" ? "destructive" : item.condition === "cukup" ? "secondary" : "default"}>
                       {conditionLabels[item.condition]}
                     </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => onEdit(item)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => onDelete(item)}
+                      >
+                        Hapus
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))

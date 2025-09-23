@@ -42,7 +42,9 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel }: LandFormProps) => {
 
   const submitHandler = async (values: LandFormValues) => {
     await onSubmit(values);
-    reset(values);
+    if (!defaultValues || Object.keys(defaultValues).length === 0) {
+      reset();
+    }
   };
 
   return (

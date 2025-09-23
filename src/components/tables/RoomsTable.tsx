@@ -1,9 +1,12 @@
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import type { Room } from "../../types/inventory";
 
 interface RoomsTableProps {
   rooms: Room[];
+  onEdit: (room: Room) => void;
+  onDelete: (room: Room) => void;
 }
 
 const conditionLabels: Record<Room["condition"], string> = {
@@ -12,7 +15,7 @@ const conditionLabels: Record<Room["condition"], string> = {
   rusak: "Rusak",
 };
 
-const RoomsTable = ({ rooms }: RoomsTableProps) => {
+const RoomsTable = ({ rooms, onEdit, onDelete }: RoomsTableProps) => {
   return (
     <Card>
       <CardHeader>
@@ -26,12 +29,13 @@ const RoomsTable = ({ rooms }: RoomsTableProps) => {
               <th className="px-4 py-3">Kode Gedung</th>
               <th className="px-4 py-3">Kondisi</th>
               <th className="px-4 py-3">Keterangan</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {rooms.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data ruangan.
                 </td>
               </tr>
@@ -46,6 +50,21 @@ const RoomsTable = ({ rooms }: RoomsTableProps) => {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{room.notes ?? "-"}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => onEdit(room)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => onDelete(room)}
+                      >
+                        Hapus
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
               ))
             )}
