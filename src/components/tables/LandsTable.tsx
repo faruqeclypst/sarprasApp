@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import type { Land } from "../../types/inventory";
 
 interface LandsTableProps {
@@ -18,35 +19,70 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
         <table className="min-w-full table-auto text-left text-sm">
           <thead>
             <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
+              <th className="px-4 py-3">No</th>
               <th className="px-4 py-3">Lokasi</th>
               <th className="px-4 py-3">Kode Lokasi</th>
               <th className="px-4 py-3">Luas</th>
-              <th className="px-4 py-3">Tahun</th>
-              <th className="px-4 py-3">Alamat</th>
-              <th className="px-4 py-3">No. Sertifikat</th>
-              <th className="px-4 py-3">Harga</th>
               <th className="px-4 py-3 text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {lands.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data tanah.
                 </td>
               </tr>
             ) : (
-              lands.map((land) => (
+              lands.map((land, index) => (
                 <tr key={land.id} className="border-b/60 last:border-0">
+                  <td className="px-4 py-3 w-12 text-center align-middle">{index + 1}</td>
                   <td className="px-4 py-3 font-medium">{land.locationName}</td>
                   <td className="px-4 py-3">{land.locationCode}</td>
                   <td className="px-4 py-3">{land.area.toLocaleString("id-ID")}&nbsp;m²</td>
-                  <td className="px-4 py-3">{land.acquisitionYear}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{land.address}</td>
-                  <td className="px-4 py-3">{land.certificateNumber}</td>
-                  <td className="px-4 py-3">Rp {land.price.toLocaleString("id-ID")}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">Lihat Detail</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl">
+                          <DialogHeader>
+                            <DialogTitle>Detail Tanah</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-sm">
+                                <div className="text-muted-foreground">Lokasi</div>
+                                <div className="col-span-2 font-medium">{land.locationName}</div>
+                                <div className="text-muted-foreground">Kode Lokasi</div>
+                                <div className="col-span-2 font-medium">{land.locationCode}</div>
+                                <div className="text-muted-foreground">Luas</div>
+                                <div className="col-span-2 font-medium">{land.area.toLocaleString("id-ID")} m²</div>
+                                <div className="text-muted-foreground">Tahun Perolehan</div>
+                                <div className="col-span-2 font-medium">{land.acquisitionYear}</div>
+                                <div className="text-muted-foreground">Alamat</div>
+                                <div className="col-span-2 whitespace-pre-wrap">{land.address}</div>
+                                <div className="text-muted-foreground">No. Sertifikat</div>
+                                <div className="col-span-2 font-medium">{land.certificateNumber}</div>
+                                <div className="text-muted-foreground">Asal</div>
+                                <div className="col-span-2 font-medium">{land.origin}</div>
+                                <div className="text-muted-foreground">Harga</div>
+                                <div className="col-span-2 font-medium">Rp {land.price.toLocaleString("id-ID")}</div>
+                                {land.description ? (
+                                  <>
+                                    <div className="text-muted-foreground">Keterangan</div>
+                                    <div className="col-span-2 whitespace-pre-wrap">{land.description}</div>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                            <div className="flex items-start justify-center">
+                              <div className="h-48 w-48 rounded bg-muted ring-1 ring-border" />
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                       <Button variant="ghost" size="sm" onClick={() => onEdit(land)}>
                         Edit
                       </Button>

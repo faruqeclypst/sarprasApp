@@ -33,8 +33,13 @@ const sanitizeFileName = (name: string) =>
 const getConfig = () => {
   if (!cachedConfig) {
     if (!bucket || !endpoint || !accessKeyId || !secretAccessKey) {
+      const missing: string[] = [];
+      if (!bucket) missing.push("VITE_R2_BUCKET");
+      if (!endpoint) missing.push("VITE_R2_ENDPOINT");
+      if (!accessKeyId) missing.push("VITE_R2_ACCESS_KEY_ID");
+      if (!secretAccessKey) missing.push("VITE_R2_SECRET_ACCESS_KEY");
       throw new Error(
-        "Konfigurasi R2 belum lengkap. Pastikan VITE_R2_BUCKET, VITE_R2_ENDPOINT, VITE_R2_ACCESS_KEY_ID, dan VITE_R2_SECRET_ACCESS_KEY terisi."
+        `Konfigurasi R2 belum lengkap. Variabel berikut belum terisi: ${missing.join(", ")}.`
       );
     }
 
@@ -57,6 +62,7 @@ const ensureClient = () => {
     cachedClient = new S3Client({
       region: "auto",
       endpoint: config.endpoint,
+      forcePathStyle: true,
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
@@ -67,19 +73,52 @@ const ensureClient = () => {
   return cachedClient;
 };
 
+const isR2Configured = () => !!(bucket && endpoint && accessKeyId && secretAccessKey);
+
+const blobToDataUrl = (blob: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
 export async function uploadInventoryImage(folder: string, file: File): Promise<UploadResult> {
+  // Dev fallback: allow inlining image as data URL when R2 is not configured
+  if (!isR2Configured()) {
+    if (import.meta.env.VITE_R2_DEV_INLINE_BASE64 === "true") {
+      const dataUrl = await blobToDataUrl(file);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const safeName = sanitizeFileName(file.name);
+      const key = `${folder}/${timestamp}-${safeName}`;
+      console.warn(
+        "R2 tidak dikonfigurasi. Menggunakan fallback data URL untuk pengembangan. Jangan gunakan di produksi."
+      );
+      return { key, url: dataUrl };
+    }
+
+    throw new Error(
+      "Konfigurasi R2 belum lengkap. Set env VITE_R2_* atau aktifkan fallback dev dengan VITE_R2_DEV_INLINE_BASE64=true."
+    );
+  }
+
   const config = getConfig();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const safeName = sanitizeFileName(file.name);
   const key = `${folder}/${timestamp}-${safeName}`;
 
   const client = ensureClient();
+  // Convert to Uint8Array to avoid ReadableStream issues in some browsers
+  const arrayBuffer = await file.arrayBuffer();
+  const bodyBytes = new Uint8Array(arrayBuffer);
+
   await client.send(
     new PutObjectCommand({
       Bucket: config.bucket,
       Key: key,
-      Body: file,
+      Body: bodyBytes,
       ContentType: file.type || "application/octet-stream",
+      // ContentLength: bodyBytes.byteLength, // optional: R2 generally infers
     })
   );
 

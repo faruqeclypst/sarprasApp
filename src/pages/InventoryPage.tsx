@@ -40,8 +40,9 @@ const InventoryPage = () => {
 
       closeDialog();
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       console.error("Gagal menyimpan barang", error);
-      alert("Gagal menyimpan barang. Pastikan koneksi dan konfigurasi penyimpanan sudah benar.");
+      alert(`Gagal menyimpan barang. ${message}`);
     }
   };
 
