@@ -34,8 +34,10 @@ const RoomsPage = () => {
 
       if (dialogMode === "edit" && selectedRoom) {
         await updateRoom(selectedRoom.id, { ...rest, photoUrl });
+        alert("Ruangan berhasil diperbarui!");
       } else {
         await createRoom({ ...rest, photoUrl });
+        alert("Ruangan berhasil ditambahkan!");
       }
 
       closeDialog();
@@ -57,11 +59,12 @@ const RoomsPage = () => {
   };
 
   const handleDeleteRoom = async (room: Room) => {
-    const confirmed = window.confirm(`Hapus data ruang "${room.name}"?`);
+    const confirmed = window.confirm(`Hapus data ruang "${room.name}"?\n\nData yang dihapus tidak dapat dikembalikan.`);
     if (!confirmed) return;
 
     try {
       await deleteRoom(room.id);
+      alert("Ruangan berhasil dihapus!");
     } catch (error) {
       console.error("Gagal menghapus ruangan", error);
       alert("Gagal menghapus ruangan. Silakan coba lagi.");
@@ -74,6 +77,9 @@ const RoomsPage = () => {
         buildingCode: selectedRoom.buildingCode,
         condition: selectedRoom.condition,
         notes: selectedRoom.notes ?? "",
+        capacity: selectedRoom.capacity,
+        roomType: selectedRoom.roomType,
+        floor: selectedRoom.floor,
       }
     : undefined;
 

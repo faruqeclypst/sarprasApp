@@ -32,6 +32,9 @@ export const roomSchema = z.object({
   buildingCode: z.string().min(1, "Kode gedung wajib diisi"),
   condition: z.enum(["baik", "cukup", "rusak"]),
   notes: z.string().optional().or(z.literal("")),
+  capacity: z.coerce.number().min(1, "Kapasitas minimal 1 orang").optional(),
+  roomType: z.enum(["kelas", "laboratorium", "kantor", "ruang_rapat", "perpustakaan", "lainnya"]).optional(),
+  floor: z.coerce.number().min(1, "Lantai minimal 1").optional(),
   photoFile: imageFileSchema,
 });
 
@@ -57,6 +60,7 @@ export const loanSchema = z.object({
   itemId: z.string().min(1, "Barang wajib dipilih"),
   itemName: z.string().min(1, "Nama barang wajib diisi"),
   borrowerName: z.string().min(1, "Nama peminjam wajib diisi"),
+  status: z.enum(["dipinjam", "dikembalikan"]),
   notes: z.string().optional().or(z.literal("")),
   photoFile: imageFileSchema,
 });

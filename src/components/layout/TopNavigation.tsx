@@ -2,11 +2,15 @@ import { Menu, Search } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useInventory } from "../../context/InventoryContext";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 
-const TopNavigation = () => {
+interface TopNavigationProps {
+  onMenuClick?: () => void;
+}
+
+const TopNavigation = ({ onMenuClick }: TopNavigationProps) => {
   const { search, setSearch } = useInventory();
   const { user, signOut, usernameFromEmail } = useAuth();
 
@@ -28,7 +32,12 @@ const TopNavigation = () => {
 
   return (
     <header className="sticky top-0 z-40 flex w-full items-center gap-4 border-b bg-card/60 px-6 py-4 backdrop-blur">
-      <Button variant="ghost" size="icon" className="md:hidden">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden"
+        onClick={onMenuClick}
+      >
         <Menu className="h-5 w-5" />
       </Button>
       <div className="relative flex-1">
@@ -46,6 +55,7 @@ const TopNavigation = () => {
           <span className="text-xs text-muted-foreground">{user?.email ?? ""}</span>
         </div>
         <Avatar>
+          <AvatarImage src={user?.photoURL || undefined} alt={displayName} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <Button variant="outline" size="sm" onClick={handleSignOut}>

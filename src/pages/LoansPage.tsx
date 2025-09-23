@@ -68,6 +68,18 @@ const LoansPage = () => {
     }
   };
 
+  const handleMarkReturned = async (loan: Loan) => {
+    const confirmed = window.confirm(`Tandai barang "${loan.itemName}" sudah dikembalikan oleh "${loan.borrowerName}"?`);
+    if (!confirmed) return;
+
+    try {
+      await updateLoan(loan.id, { ...loan, status: "dikembalikan" });
+    } catch (error) {
+      console.error("Gagal menandai pengembalian", error);
+      alert("Gagal menandai pengembalian. Silakan coba lagi.");
+    }
+  };
+
   const defaultValues = selectedLoan
     ? {
         loanDate: selectedLoan.loanDate,
@@ -75,6 +87,7 @@ const LoansPage = () => {
         itemId: selectedLoan.itemId,
         itemName: selectedLoan.itemName,
         borrowerName: selectedLoan.borrowerName,
+        status: selectedLoan.status,
         notes: selectedLoan.notes ?? "",
       }
     : undefined;
@@ -120,7 +133,7 @@ const LoansPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <LoansTable loans={loans} onEdit={handleEditLoan} onDelete={handleDeleteLoan} />
+      <LoansTable loans={loans} onEdit={handleEditLoan} onDelete={handleDeleteLoan} onMarkReturned={handleMarkReturned} />
     </div>
   );
 };

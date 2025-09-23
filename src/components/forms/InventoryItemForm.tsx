@@ -129,7 +129,11 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel, existi
       {!hasRooms ? (
         <p className="text-sm text-destructive">Tambahkan data ruangan terlebih dahulu sebelum mencatat barang.</p>
       ) : null}
-      <Button type="submit" disabled={isSubmitting || !hasRooms} className="w-full">
+      <Button
+        type="submit"
+        disabled={isSubmitting || !hasRooms}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors"
+      >
         {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}
       </Button>
     </form>

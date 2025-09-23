@@ -36,6 +36,7 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel, existingPhotoUr
       itemId: items[0]?.id ?? "",
       itemName: items[0]?.name ?? "",
       borrowerName: "",
+      status: "dipinjam",
       notes: "",
       photoFile: undefined,
       ...defaultValues,
@@ -94,6 +95,13 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel, existingPhotoUr
         <FormField id="borrowerName" label="Nama Peminjam" error={errors.borrowerName}>
           <Input id="borrowerName" {...register("borrowerName")} />
         </FormField>
+        <FormField id="status" label="Status" error={errors.status}>
+          <Select id="status" {...register("status")}>
+            <option value="">Pilih Status</option>
+            <option value="dipinjam">Dipinjam</option>
+            <option value="dikembalikan">Dikembalikan</option>
+          </Select>
+        </FormField>
         <FormField
           id="photoFile"
           label="Foto Dokumentasi"
@@ -120,7 +128,11 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel, existingPhotoUr
       {!hasItems ? (
         <p className="text-sm text-destructive">Tambahkan data barang terlebih dahulu sebelum mencatat peminjaman.</p>
       ) : null}
-      <Button type="submit" className="w-full" disabled={isSubmitting || !hasItems}>
+      <Button
+        type="submit"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors"
+        disabled={isSubmitting || !hasItems}
+      >
         {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}
       </Button>
     </form>

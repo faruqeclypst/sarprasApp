@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Building2, ClipboardList, Home, Layers, MapPin } from "lucide-react";
+import { Building2, ClipboardList, Home, Layers, MapPin, X } from "lucide-react";
+import * as React from "react";
 
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import Logo from "./logo";
+import AppGuide from "../guide/AppGuide";
 
 const navigation = [
   { to: "/", label: "Dashboard", icon: Home },
@@ -13,32 +15,92 @@ const navigation = [
   { to: "/peminjaman", label: "Peminjaman", icon: Layers },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  isMobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar = ({ isMobileOpen = false, onClose }: SidebarProps) => {
+  const [showGuide, setShowGuide] = React.useState(false);
+
   return (
-    <aside className="hidden w-72 flex-col border-r bg-card/60 p-6 shadow-sm md:flex">
-      <Logo />
-      <nav className="mt-8 flex flex-1 flex-col gap-2">
-        {navigation.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition", 
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )
-            }
-            end
+    <>
+      {/* Mobile backdrop */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed left-0 top-0 z-50 flex h-screen w-80 flex-col border-r bg-card/80 p-6 shadow-lg backdrop-blur-sm transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        {/* Mobile close button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4 md:hidden"
+          onClick={onClose}
+        >
+          <X className="h-5 w-5" />
+        </Button>
+
+        <div className="mb-8">
+          <Logo />
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-1">
+          <div className="mb-4">
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Menu Utama
+            </h3>
+          </div>
+          {navigation.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              onClick={onClose}
+              className={({ isActive }) =>
+                cn(
+                  "group flex items-center gap-4 rounded-xl px-4 py-4 text-sm font-medium transition-all duration-200 ease-in-out",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-md transform scale-[1.02]"
+                    : "text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:shadow-sm hover:transform hover:scale-[1.01]"
+                )
+              }
+              end
+            >
+              <div className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                "group-hover:bg-background/50",
+                "bg-muted/30"
+              )}>
+                <item.icon className="h-5 w-5" />
+              </div>
+              <span className="flex-1">{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="mt-8 pt-6 border-t border-border/50">
+          <Button
+            variant="outline"
+            className="w-full h-12 text-sm font-medium hover:bg-muted/80 transition-colors"
+            onClick={() => setShowGuide(true)}
           >
-            <item.icon className="h-5 w-5" />
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-      <Button variant="outline" className="mt-auto w-full">Panduan Aplikasi</Button>
-    </aside>
+            Panduan Aplikasi
+          </Button>
+        </div>
+      </aside>
+
+      <AppGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+      />
+    </>
   );
 };
 

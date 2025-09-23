@@ -5,6 +5,9 @@ export interface Room {
   photoUrl?: string;
   condition: "baik" | "cukup" | "rusak";
   notes?: string;
+  capacity?: number;
+  roomType?: "kelas" | "laboratorium" | "kantor" | "ruang_rapat" | "perpustakaan" | "lainnya";
+  floor?: number;
 }
 
 export interface Land {
@@ -42,6 +45,7 @@ export interface Loan {
   itemId: string;
   itemName: string;
   borrowerName: string;
+  status: "dipinjam" | "dikembalikan";
   photoUrl?: string;
   notes?: string;
 }

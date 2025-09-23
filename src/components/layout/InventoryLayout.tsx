@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { motion } from "framer-motion";
 import { Outlet, useLocation } from "react-router-dom";
 
@@ -11,12 +11,24 @@ interface InventoryLayoutProps {
 
 const InventoryLayout = ({ children }: InventoryLayoutProps) => {
   const location = useLocation();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  };
+
+  const closeMobileSidebar = () => {
+    setIsMobileSidebarOpen(false);
+  };
 
   return (
-    <div className="flex min-h-screen w-full bg-muted/30 text-foreground">
-      <Sidebar />
+    <div className="flex h-screen w-full bg-muted/30 text-foreground overflow-hidden">
+      <Sidebar
+        isMobileOpen={isMobileSidebarOpen}
+        onClose={closeMobileSidebar}
+      />
       <div className="flex flex-1 flex-col">
-        <TopNavigation />
+        <TopNavigation onMenuClick={toggleMobileSidebar} />
         <motion.main
           key={location.pathname}
           initial={{ opacity: 0, y: 16 }}
