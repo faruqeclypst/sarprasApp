@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FirebaseError } from "firebase/app";
-import { Lock, User, Eye, EyeOff, Sparkles, Shield } from "lucide-react";
+import { Lock, User, Eye, EyeOff, Sparkles, Shield, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -13,21 +13,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Input } from "../components/ui/input";
 import { useAuth } from "../context/AuthContext";
 
-const loginSchema = z.object({
+const registerSchema = z.object({
   username: z.string().min(3, "Username minimal 3 karakter"),
   password: z.string().min(6, "Password minimal 6 karakter"),
+  displayName: z.string().min(2, "Nama lengkap wajib diisi"),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 const firebaseErrorMessage = (error: unknown) => {
   if (error instanceof FirebaseError) {
     switch (error.code) {
-      case "auth/user-not-found":
-      case "auth/wrong-password":
-        return "Username atau password tidak valid.";
-      case "auth/too-many-requests":
-        return "Terlalu banyak percobaan login. Coba lagi beberapa saat lagi.";
+      case "auth/email-already-in-use":
+        return "Username sudah terdaftar. Silakan gunakan nama lain.";
+      case "auth/weak-password":
+        return "Password terlalu lemah. Gunakan kombinasi yang lebih kuat.";
+      case "auth/invalid-email":
+        return "Format username tidak valid.";
       default:
         return error.message;
     }
@@ -40,8 +42,8 @@ const firebaseErrorMessage = (error: unknown) => {
   return "Terjadi kesalahan yang tidak diketahui.";
 };
 
-const LoginPage = () => {
-  const { signInWithUsername } = useAuth();
+const RegisterPage = () => {
+  const { registerWithUsername } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -49,18 +51,19 @@ const LoginPage = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
       password: "",
+      displayName: "",
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     setFormError(null);
     try {
-      await signInWithUsername(values.username, values.password);
+      await registerWithUsername(values.username, values.password, values.displayName.trim());
     } catch (error) {
       const message = firebaseErrorMessage(error);
       setFormError(message);
@@ -158,7 +161,7 @@ const LoginPage = () => {
               }}
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg"
             >
-              <Lock className="h-8 w-8 text-white" />
+              <UserPlus className="h-8 w-8 text-white" />
             </motion.div>
 
             <motion.div
@@ -167,10 +170,10 @@ const LoginPage = () => {
               transition={{ delay: 0.3 }}
             >
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
-                Selamat Datang Kembali
+                Buat Akun Admin
               </CardTitle>
               <CardDescription className="mt-2 text-gray-600 dark:text-gray-400">
-                Masuk ke dashboard dengan akun admin Anda
+                Daftarkan akun admin baru untuk sistem manajemen
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -194,10 +197,29 @@ const LoginPage = () => {
                     <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
                       id="username"
-                      placeholder="Masukkan username admin"
+                      placeholder="Masukkan username unik"
                       autoComplete="username"
                       className="pl-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
                       {...register("username")}
+                    />
+                  </div>
+                </FormField>
+              </motion.div>
+
+              {/* Display Name Field */}
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <FormField id="displayName" label="Nama Lengkap" error={errors.displayName}>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      id="displayName"
+                      placeholder="Masukkan nama lengkap"
+                      className="pl-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
+                      {...register("displayName")}
                     />
                   </div>
                 </FormField>
@@ -207,7 +229,7 @@ const LoginPage = () => {
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.6 }}
+                transition={{ delay: 0.7 }}
               >
                 <FormField id="password" label="Password" error={errors.password}>
                   <div className="relative">
@@ -215,8 +237,8 @@ const LoginPage = () => {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      placeholder="Masukkan password"
+                      autoComplete="new-password"
+                      placeholder="Buat password yang kuat"
                       className="pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
                       {...register("password")}
                     />
@@ -249,7 +271,7 @@ const LoginPage = () => {
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.8 }}
               >
                 <Button
                   type="submit"
@@ -262,26 +284,26 @@ const LoginPage = () => {
                     transition={{ duration: 1, repeat: isSubmitting ? Infinity : 0 }}
                   >
                     {isSubmitting && <Sparkles className="h-4 w-4 animate-spin" />}
-                    {isSubmitting ? "Memproses..." : "Masuk Sekarang"}
+                    {isSubmitting ? "Mendaftarkan..." : "Daftar Sekarang"}
                   </motion.div>
                 </Button>
               </motion.div>
             </motion.form>
 
-            {/* Register Link */}
+            {/* Login Link */}
             <motion.div
               className="text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
             >
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Belum punya akun admin?{" "}
+                Sudah punya akun admin?{" "}
                 <Link
-                  to="/register"
+                  to="/login"
                   className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  Daftar di sini
+                  Masuk di sini
                 </Link>
               </p>
             </motion.div>
@@ -292,4 +314,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

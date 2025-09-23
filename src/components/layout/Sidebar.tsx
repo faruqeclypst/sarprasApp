@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Building2, ClipboardList, Home, Layers, MapPin, X } from "lucide-react";
+import { Building2, ClipboardList, Home, Layers, MapPin, X, Lock } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../../lib/utils";
@@ -85,7 +85,29 @@ const Sidebar = ({ isMobileOpen = false, onClose }: SidebarProps) => {
           ))}
         </nav>
 
-        <div className="mt-8 pt-6 border-t border-border/50">
+        <div className="mt-8 pt-6 border-t border-border/50 space-y-3">
+          <NavLink
+            to="/change-password"
+            onClick={onClose}
+            className={({ isActive }) =>
+              cn(
+                "group flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out",
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-md transform scale-[1.02]"
+                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground hover:shadow-sm hover:transform hover:scale-[1.01]"
+              )
+            }
+          >
+            <div className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+              "group-hover:bg-background/50",
+              "bg-muted/30"
+            )}>
+              <Lock className="h-5 w-5" />
+            </div>
+            <span className="flex-1">Ubah Password</span>
+          </NavLink>
+
           <Button
             variant="outline"
             className="w-full h-12 text-sm font-medium hover:bg-muted/80 transition-colors"

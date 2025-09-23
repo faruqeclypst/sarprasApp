@@ -5,6 +5,8 @@ import InventoryLayout from "./components/layout/InventoryLayout";
 import LoadingScreen from "./components/layout/LoadingScreen";
 import { useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
 import { ToastProvider } from "./components/ui/toast";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -25,6 +27,8 @@ const App = () => {
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+          <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
+          <Route path="/change-password" element={user ? <ChangePasswordPage /> : <Navigate to="/login" replace />} />
           <Route
             element={user ? <InventoryLayout /> : <Navigate to="/login" replace />}
           >

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FirebaseError } from "firebase/app";
-import { Lock, User, Eye, EyeOff, Sparkles, Shield } from "lucide-react";
+import { Lock, Eye, EyeOff, Sparkles, Shield, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 import FormField from "../components/forms/FormField";
 import { Button } from "../components/ui/button";
@@ -13,21 +15,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Input } from "../components/ui/input";
 import { useAuth } from "../context/AuthContext";
 
-const loginSchema = z.object({
-  username: z.string().min(3, "Username minimal 3 karakter"),
-  password: z.string().min(6, "Password minimal 6 karakter"),
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
+  newPassword: z.string().min(6, "Password baru minimal 6 karakter"),
+  confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Password baru dan konfirmasi tidak cocok",
+  path: ["confirmPassword"],
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 const firebaseErrorMessage = (error: unknown) => {
   if (error instanceof FirebaseError) {
     switch (error.code) {
-      case "auth/user-not-found":
       case "auth/wrong-password":
-        return "Username atau password tidak valid.";
+        return "Password saat ini tidak benar.";
+      case "auth/weak-password":
+        return "Password baru terlalu lemah. Gunakan kombinasi yang lebih kuat.";
+      case "auth/requires-recent-login":
+        return "Untuk keamanan, silakan login ulang terlebih dahulu.";
       case "auth/too-many-requests":
-        return "Terlalu banyak percobaan login. Coba lagi beberapa saat lagi.";
+        return "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.";
       default:
         return error.message;
     }
@@ -40,27 +49,44 @@ const firebaseErrorMessage = (error: unknown) => {
   return "Terjadi kesalahan yang tidak diketahui.";
 };
 
-const LoginPage = () => {
-  const { signInWithUsername } = useAuth();
+const ChangePasswordPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [formError, setFormError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async (values: ChangePasswordFormValues) => {
+    if (!user) {
+      setFormError("User tidak ditemukan. Silakan login ulang.");
+      return;
+    }
+
     setFormError(null);
     try {
-      await signInWithUsername(values.username, values.password);
+      // Re-authenticate user with current password
+      const credential = EmailAuthProvider.credential(user.email!, values.currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, values.newPassword);
+
+      // Success - redirect to dashboard
+      navigate("/", { replace: true });
     } catch (error) {
       const message = firebaseErrorMessage(error);
       setFormError(message);
@@ -68,7 +94,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/20 dark:to-blue-800/20">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 dark:from-gray-900 dark:via-blue-900/20 dark:to-blue-800/20 p-6">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -139,13 +165,25 @@ const LoginPage = () => {
           stiffness: 100,
           damping: 15
         }}
-        className="relative z-10 w-full max-w-md p-6"
+        className="relative z-10 w-full max-w-md"
       >
         <Card className="relative overflow-hidden rounded-3xl border-0 bg-white/80 shadow-2xl backdrop-blur-xl dark:bg-gray-900/80">
           {/* Card Header Decoration */}
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700" />
 
           <CardHeader className="relative space-y-4 pb-8 pt-8 text-center">
+            {/* Back Button */}
+            <div className="absolute left-6 top-6">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-10 w-10 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </div>
+
             {/* Icon Animation */}
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -167,10 +205,10 @@ const LoginPage = () => {
               transition={{ delay: 0.3 }}
             >
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
-                Selamat Datang Kembali
+                Ubah Password
               </CardTitle>
               <CardDescription className="mt-2 text-gray-600 dark:text-gray-400">
-                Masuk ke dashboard dengan akun admin Anda
+                Perbarui password akun admin Anda
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -183,49 +221,85 @@ const LoginPage = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              {/* Username Field */}
+              {/* Current Password Field */}
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <FormField id="username" label="Username" error={errors.username}>
+                <FormField id="currentPassword" label="Password Saat Ini" error={errors.currentPassword}>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
-                      id="username"
-                      placeholder="Masukkan username admin"
-                      autoComplete="username"
-                      className="pl-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
-                      {...register("username")}
+                      id="currentPassword"
+                      type={showCurrentPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="Masukkan password saat ini"
+                      className="pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
+                      {...register("currentPassword")}
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </FormField>
               </motion.div>
 
-              {/* Password Field */}
+              {/* New Password Field */}
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
-                <FormField id="password" label="Password" error={errors.password}>
+                <FormField id="newPassword" label="Password Baru" error={errors.newPassword}>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                     <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      placeholder="Masukkan password"
+                      id="newPassword"
+                      type={showNewPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Masukkan password baru"
                       className="pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
-                      {...register("password")}
+                      {...register("newPassword")}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowNewPassword(!showNewPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </FormField>
+              </motion.div>
+
+              {/* Confirm Password Field */}
+              <motion.div
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <FormField id="confirmPassword" label="Konfirmasi Password Baru" error={errors.confirmPassword}>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Konfirmasi password baru"
+                      className="pl-10 pr-10 rounded-xl border-gray-200 bg-gray-50/50 transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20 dark:border-gray-700 dark:bg-gray-800/50 dark:focus:bg-gray-800"
+                      {...register("confirmPassword")}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </FormField>
@@ -249,7 +323,7 @@ const LoginPage = () => {
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7 }}
+                transition={{ delay: 0.8 }}
               >
                 <Button
                   type="submit"
@@ -262,28 +336,25 @@ const LoginPage = () => {
                     transition={{ duration: 1, repeat: isSubmitting ? Infinity : 0 }}
                   >
                     {isSubmitting && <Sparkles className="h-4 w-4 animate-spin" />}
-                    {isSubmitting ? "Memproses..." : "Masuk Sekarang"}
+                    {isSubmitting ? "Memperbarui..." : "Perbarui Password"}
                   </motion.div>
                 </Button>
               </motion.div>
             </motion.form>
 
-            {/* Register Link */}
+            {/* Back to Dashboard */}
             <motion.div
               className="text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
             >
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Belum punya akun admin?{" "}
-                <Link
-                  to="/register"
-                  className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  Daftar di sini
-                </Link>
-              </p>
+              <Link
+                to="/"
+                className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                ← Kembali ke Dashboard
+              </Link>
             </motion.div>
           </CardContent>
         </Card>
@@ -292,4 +363,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default ChangePasswordPage;
