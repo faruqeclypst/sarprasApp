@@ -1,22 +1,25 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import FormField from "./FormField";
+import FileDropInput from "./FileDropInput";
 import { LandFormValues, landSchema } from "./schemas";
 
 interface LandFormProps {
   defaultValues?: Partial<LandFormValues>;
   onSubmit: (values: LandFormValues) => Promise<void>;
   submitLabel?: string;
+  existingPhotoUrl?: string;
 }
 
-const LandForm = ({ defaultValues, onSubmit, submitLabel }: LandFormProps) => {
+const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: LandFormProps) => {
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -32,18 +35,38 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel }: LandFormProps) => {
       origin: "",
       price: 0,
       description: "",
+      photoFile: undefined,
       ...defaultValues,
     },
   });
 
   useEffect(() => {
-    reset((prev) => ({ ...prev, ...defaultValues }));
+    if (defaultValues) {
+      reset((prev) => ({ ...prev, ...defaultValues, photoFile: undefined }));
+    }
   }, [defaultValues, reset]);
 
   const submitHandler = async (values: LandFormValues) => {
-    await onSubmit(values);
-    if (!defaultValues || Object.keys(defaultValues).length === 0) {
-      reset();
+    try {
+      await onSubmit(values);
+      if (!defaultValues || Object.keys(defaultValues).length === 0) {
+        reset({
+          locationName: "",
+          locationCode: "",
+          area: 0,
+          acquisitionYear: new Date().getFullYear(),
+          address: "",
+          certificateNumber: "",
+          origin: "",
+          price: 0,
+          description: "",
+          photoFile: undefined,
+        });
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      // Don't reset the form if there was an error, but show validation errors
+      throw error;
     }
   };
 
@@ -83,6 +106,27 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel }: LandFormProps) => {
       </FormField>
       <FormField id="description" label="Keterangan" error={errors.description}>
         <Textarea id="description" rows={3} {...register("description")} />
+      </FormField>
+      <FormField
+        id="photoFile"
+        label="Foto Tanah"
+        error={errors.photoFile}
+        description="Format JPG, PNG, atau WEBP"
+      >
+        <Controller
+          control={control}
+          name="photoFile"
+          render={({ field }) => (
+            <FileDropInput
+              id="photoFile"
+              value={field.value}
+              onChange={field.onChange}
+              existingUrl={existingPhotoUrl}
+              accept="image/*"
+              placeholder="Seret & lepas foto tanah di sini atau klik untuk memilih"
+            />
+          )}
+        />
       </FormField>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}

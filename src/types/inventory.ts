@@ -17,6 +17,7 @@ export interface Land {
   certificateNumber: string;
   origin: string;
   price: number;
+  photoUrl?: string;
   description?: string;
 }
 

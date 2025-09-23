@@ -21,6 +21,7 @@ const LoansTable = ({ loans, onEdit, onDelete }: LoansTableProps) => {
           <thead>
             <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
               <th className="px-4 py-3">No</th>
+              <th className="px-4 py-3">Foto</th>
               <th className="px-4 py-3">Peminjam</th>
               <th className="px-4 py-3">Barang</th>
               <th className="px-4 py-3">Tgl Pinjam</th>
@@ -31,7 +32,7 @@ const LoansTable = ({ loans, onEdit, onDelete }: LoansTableProps) => {
           <tbody>
             {loans.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data peminjaman.
                 </td>
               </tr>
@@ -42,6 +43,28 @@ const LoansTable = ({ loans, onEdit, onDelete }: LoansTableProps) => {
                 return (
                   <tr key={loan.id} className="border-b/60 last:border-0">
                     <td className="px-4 py-3 w-12 text-center align-middle">{index + 1}</td>
+                    <td className="px-4 py-3">
+                      {loan.photoUrl ? (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <img
+                              src={loan.photoUrl}
+                              alt={`Foto peminjaman ${loan.itemName}`}
+                              className="h-10 w-10 cursor-pointer rounded object-cover ring-1 ring-border"
+                            />
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl p-2 sm:p-4">
+                            <img
+                              src={loan.photoUrl}
+                              alt={`Foto peminjaman ${loan.itemName}`}
+                              className="mx-auto max-h-[80vh] w-auto rounded"
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      ) : (
+                        <div className="h-10 w-10 rounded bg-muted ring-1 ring-border" />
+                      )}
+                    </td>
                     <td className="px-4 py-3 font-medium">{loan.borrowerName}</td>
                     <td className="px-4 py-3">{loan.itemName}</td>
                     <td className="px-4 py-3">{new Date(loan.loanDate).toLocaleDateString("id-ID")}</td>

@@ -48,6 +48,7 @@ export const landSchema = z.object({
   origin: z.string().min(1, "Asal wajib diisi"),
   price: z.coerce.number().min(0, "Harga wajib diisi"),
   description: z.string().optional().or(z.literal("")),
+  photoFile: imageFileSchema,
 });
 
 export const loanSchema = z.object({

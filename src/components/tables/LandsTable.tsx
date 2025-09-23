@@ -20,6 +20,7 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
           <thead>
             <tr className="border-b text-xs uppercase tracking-wide text-muted-foreground">
               <th className="px-4 py-3">No</th>
+              <th className="px-4 py-3">Foto</th>
               <th className="px-4 py-3">Lokasi</th>
               <th className="px-4 py-3">Kode Lokasi</th>
               <th className="px-4 py-3">Luas</th>
@@ -29,7 +30,7 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
           <tbody>
             {lands.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
                   Belum ada data tanah.
                 </td>
               </tr>
@@ -37,6 +38,28 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
               lands.map((land, index) => (
                 <tr key={land.id} className="border-b/60 last:border-0">
                   <td className="px-4 py-3 w-12 text-center align-middle">{index + 1}</td>
+                  <td className="px-4 py-3">
+                    {land.photoUrl ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <img
+                            src={land.photoUrl}
+                            alt={`Foto ${land.locationName}`}
+                            className="h-10 w-10 cursor-pointer rounded object-cover ring-1 ring-border"
+                          />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl p-2 sm:p-4">
+                          <img
+                            src={land.photoUrl}
+                            alt={`Foto ${land.locationName}`}
+                            className="mx-auto max-h-[80vh] w-auto rounded"
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      <div className="h-10 w-10 rounded bg-muted ring-1 ring-border" />
+                    )}
+                  </td>
                   <td className="px-4 py-3 font-medium">{land.locationName}</td>
                   <td className="px-4 py-3">{land.locationCode}</td>
                   <td className="px-4 py-3">{land.area.toLocaleString("id-ID")}&nbsp;m²</td>
@@ -78,7 +101,11 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
                               </div>
                             </div>
                             <div className="flex items-start justify-center">
-                              <div className="h-48 w-48 rounded bg-muted ring-1 ring-border" />
+                              {land.photoUrl ? (
+                                <img src={land.photoUrl} alt={`Foto ${land.locationName}`} className="max-h-[60vh] rounded object-contain" />
+                              ) : (
+                                <div className="h-48 w-48 rounded bg-muted ring-1 ring-border" />
+                              )}
                             </div>
                           </div>
                         </DialogContent>

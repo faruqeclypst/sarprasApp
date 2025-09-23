@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "../components/ui/button";
 import LandsTable from "../components/tables/LandsTable";
 import { useInventory } from "../context/InventoryContext";
+import { uploadInventoryImage } from "../lib/storage";
 import type { Land } from "../types/inventory";
+import type { LandFormValues } from "../components/forms/schemas";
 
 const LandsPage = () => {
   const { lands, createLand, updateLand, deleteLand } = useInventory();
@@ -20,13 +22,47 @@ const LandsPage = () => {
     setDialogMode("create");
   };
 
-  const handleSubmit = async (values: Parameters<typeof createLand>[0]) => {
-    if (dialogMode === "edit" && selectedLand) {
-      await updateLand(selectedLand.id, values);
-    } else {
-      await createLand(values);
+  const handleSubmit = async (values: LandFormValues) => {
+    try {
+      // Handle photo upload if there's a file
+      let photoUrl = selectedLand?.photoUrl; // Keep existing photo URL if editing
+
+      if (values.photoFile) {
+        try {
+          // Upload new photo and get URL
+          const uploadResult = await uploadInventoryImage("lands", values.photoFile);
+          photoUrl = uploadResult.url;
+        } catch (uploadError) {
+          console.error("Error uploading photo:", uploadError);
+          alert("Gagal mengunggah foto. Silakan coba lagi.");
+          return;
+        }
+      }
+
+      // Prepare the data to save (without the photoFile)
+      const dataToSave = {
+        locationName: values.locationName,
+        locationCode: values.locationCode,
+        area: values.area,
+        acquisitionYear: values.acquisitionYear,
+        address: values.address,
+        certificateNumber: values.certificateNumber,
+        origin: values.origin,
+        price: values.price,
+        description: values.description,
+        photoUrl,
+      };
+
+      if (dialogMode === "edit" && selectedLand) {
+        await updateLand(selectedLand.id, dataToSave);
+      } else {
+        await createLand(dataToSave);
+      }
+      closeDialog();
+    } catch (error) {
+      console.error("Error saving land:", error);
+      alert("Gagal menyimpan data tanah. Silakan coba lagi.");
     }
-    closeDialog();
   };
 
   const handleCreateClick = () => {
@@ -63,6 +99,7 @@ const LandsPage = () => {
         origin: selectedLand.origin,
         price: selectedLand.price,
         description: selectedLand.description ?? "",
+        photoFile: undefined,
       }
     : undefined;
 
@@ -101,6 +138,7 @@ const LandsPage = () => {
               defaultValues={defaultValues}
               onSubmit={handleSubmit}
               submitLabel={dialogMode === "edit" ? "Perbarui Tanah" : "Simpan Tanah"}
+              existingPhotoUrl={selectedLand?.photoUrl}
             />
           </DialogContent>
         </Dialog>
