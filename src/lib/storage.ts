@@ -1,40 +1,26 @@
-import axios from "axios";
-
-export interface PresignedRequest {
-  url: string;
-  fields?: Record<string, string>;
-}
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 export interface UploadResult {
   key: string;
   url: string;
 }
 
-export async function uploadFileToR2(
-  file: File,
-  presigned: PresignedRequest
-): Promise<UploadResult> {
-  if (presigned.fields) {
-    const formData = new FormData();
-    Object.entries(presigned.fields).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    formData.append("file", file);
-    await axios.post(presigned.url, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return {
-      key: presigned.fields.key ?? file.name,
-      url: `${presigned.url}/${presigned.fields.key ?? file.name}`,
-    };
-  }
+const bucket = import.meta.env.VITE_R2_BUCKET as string | undefined;
+const endpoint = import.meta.env.VITE_R2_ENDPOINT as string | undefined;
+const accessKeyId = import.meta.env.VITE_R2_ACCESS_KEY_ID as string | undefined;
+const secretAccessKey = import.meta.env.VITE_R2_SECRET_ACCESS_KEY as string | undefined;
+const publicBaseUrl = import.meta.env.VITE_R2_PUBLIC_BASE_URL as string | undefined;
 
-  await axios.put(presigned.url, file, {
-    headers: { "Content-Type": file.type },
-  });
-
-  return { key: file.name, url: presigned.url.split("?")[0] };
-}
+let cachedClient: S3Client | null = null;
+let cachedConfig:
+  | {
+      bucket: string;
+      endpoint: string;
+      accessKeyId: string;
+      secretAccessKey: string;
+      publicBaseUrl?: string;
+    }
+  | null = null;
 
 const sanitizeFileName = (name: string) =>
   name
@@ -44,25 +30,78 @@ const sanitizeFileName = (name: string) =>
     .replace(/^-|-$/g, "")
     .toLowerCase();
 
-export async function requestPresignedUpload(key: string, file: File): Promise<PresignedRequest> {
-  const signerEndpoint = import.meta.env.VITE_R2_SIGNER_URL;
-  if (!signerEndpoint) {
-    throw new Error("VITE_R2_SIGNER_URL belum dikonfigurasi");
+const getConfig = () => {
+  if (!cachedConfig) {
+    if (!bucket || !endpoint || !accessKeyId || !secretAccessKey) {
+      throw new Error(
+        "Konfigurasi R2 belum lengkap. Pastikan VITE_R2_BUCKET, VITE_R2_ENDPOINT, VITE_R2_ACCESS_KEY_ID, dan VITE_R2_SECRET_ACCESS_KEY terisi."
+      );
+    }
+
+    cachedConfig = {
+      bucket,
+      endpoint,
+      accessKeyId,
+      secretAccessKey,
+      publicBaseUrl,
+    };
   }
 
-  const response = await axios.post<PresignedRequest>(signerEndpoint, {
-    key,
-    contentType: file.type,
-    size: file.size,
-  });
+  return cachedConfig;
+};
 
-  return response.data;
-}
+const ensureClient = () => {
+  const config = getConfig();
+
+  if (!cachedClient) {
+    cachedClient = new S3Client({
+      region: "auto",
+      endpoint: config.endpoint,
+      credentials: {
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
+      },
+    });
+  }
+
+  return cachedClient;
+};
 
 export async function uploadInventoryImage(folder: string, file: File): Promise<UploadResult> {
+  const config = getConfig();
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const safeName = sanitizeFileName(file.name);
   const key = `${folder}/${timestamp}-${safeName}`;
-  const presigned = await requestPresignedUpload(key, file);
-  return uploadFileToR2(file, presigned);
+
+  const client = ensureClient();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: file,
+      ContentType: file.type || "application/octet-stream",
+    })
+  );
+
+  let baseUrl = config.publicBaseUrl;
+  if (!baseUrl) {
+    try {
+      const endpointUrl = new URL(config.endpoint);
+      baseUrl = `https://${config.bucket}.${endpointUrl.host}`;
+    } catch (error) {
+      console.warn("Tidak dapat membentuk URL publik R2 dari endpoint", error);
+      baseUrl = config.endpoint;
+    }
+  }
+
+  if (!baseUrl) {
+    throw new Error("Gagal menentukan URL publik R2. Periksa konfigurasi endpoint atau VITE_R2_PUBLIC_BASE_URL.");
+  }
+
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    baseUrl = `https://${baseUrl}`;
+  }
+
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  return { key, url: `${normalizedBase}/${key}` };
 }

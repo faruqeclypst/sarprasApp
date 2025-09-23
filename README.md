@@ -1,6 +1,6 @@
 # Sistem Inventaris Sarana Prasarana Sekolah
 
-Aplikasi dashboard modern berbasis **React + Vite + TypeScript** dengan styling **Tailwind CSS** dan komponen **shadcn/ui** untuk mengelola data inventaris sarana prasarana sekolah. Data tersinkronisasi real-time menggunakan **Firebase Realtime Database**, sementara berkas media didesain untuk diunggah ke **Cloudflare R2 (kompatibel S3)** melalui mekanisme pre-signed URL.
+Aplikasi dashboard modern berbasis **React + Vite + TypeScript** dengan styling **Tailwind CSS** dan komponen **shadcn/ui** untuk mengelola data inventaris sarana prasarana sekolah. Data tersinkronisasi real-time menggunakan **Firebase Realtime Database**, sementara berkas media diunggah langsung ke **Cloudflare R2 (kompatibel S3)** menggunakan kredensial S3.
 
 ## Fitur Utama
 
@@ -44,7 +44,7 @@ npm install
 
 ### 2. Variabel Lingkungan
 
-Buat berkas `.env` di root proyek dengan konfigurasi Firebase:
+Buat berkas `.env` di root proyek dengan konfigurasi Firebase dan kredensial Cloudflare R2:
 
 ```
 VITE_FIREBASE_API_KEY=...
@@ -55,10 +55,15 @@ VITE_FIREBASE_STORAGE_BUCKET=...
 VITE_FIREBASE_MESSAGING_SENDER_ID=...
 VITE_FIREBASE_APP_ID=...
 VITE_AUTH_USERNAME_DOMAIN=inventory.local
-VITE_R2_SIGNER_URL=https://<api-backend>/presign
+VITE_R2_BUCKET=<nama-bucket-r2>
+VITE_R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+VITE_R2_ACCESS_KEY_ID=<access-key-id>
+VITE_R2_SECRET_ACCESS_KEY=<secret-access-key>
+# Opsional apabila menggunakan domain CDN publik khusus
+# VITE_R2_PUBLIC_BASE_URL=cdn.sekolah.id/assets
 ```
 
-Konfigurasi Cloudflare R2 dilakukan melalui endpoint backend yang menghasilkan *pre-signed URL* lalu dipanggil menggunakan helper `uploadFileToR2`.
+> **Penting:** Pendekatan ini menyematkan kredensial R2 langsung di aplikasi frontend dan hanya direkomendasikan untuk lingkungan tepercaya atau prototipe internal. Untuk produksi, pertimbangkan membangun endpoint Cloudflare Worker/Server yang menerbitkan URL bertanda tangan sehingga kunci rahasia tidak terekspos ke pengguna akhir.
 
 ### 3. Menjalankan Aplikasi
 
@@ -84,19 +89,10 @@ Hasil build akan berada di folder `dist/`. Gunakan `npm run preview` untuk melak
 
 ## Integrasi Cloudflare R2
 
-Helper `uploadFileToR2` menerima berkas dan pre-signed URL (POST/PUT) sehingga frontend tetap aman tanpa menyimpan kredensial R2. Implementasikan endpoint backend yang mengembalikan struktur berikut:
-
-```json
-{
-  "url": "https://<account-id>.r2.cloudflarestorage.com/<bucket>/<object>?signature=...",
-  "fields": {
-    "key": "uploads/uuid-file.png",
-    "policy": "..."
-  }
-}
-```
-
-Kemudian panggil helper tersebut sebelum menyimpan URL file ke database.
+- Helper `uploadInventoryImage(folder, file)` membuat nama unik, mengunggah berkas langsung ke bucket R2 memakai `@aws-sdk/client-s3`, dan mengembalikan URL publiknya.
+- URL publik secara default memakai pola `https://<bucket>.<account-id>.r2.cloudflarestorage.com/<key>`. Jika Anda menggunakan domain CDN kustom, setel `VITE_R2_PUBLIC_BASE_URL` agar helper menghasilkan URL sesuai domain tersebut.
+- Pastikan bucket R2 Anda mengizinkan akses baca publik terhadap objek yang diunggah (mis. melalui kebijakan `Public Bucket` atau CF Worker yang melakukan proxy).
+- Karena kredensial tertanam di frontend, sebaiknya batasi hak akses akun R2 (mis. hanya `PutObject` dan `GetObject` untuk bucket terkait) dan rotasi kunci secara berkala.
 
 ### Otorisasi & Login
 
@@ -109,11 +105,8 @@ Kemudian panggil helper tersebut sebelum menyimpan URL file ke database.
 ### Unggah Foto Inventaris
 
 - Form barang, ruang, dan peminjaman kini menerima **unggahan berkas gambar langsung** (JPG/PNG/WEBP) alih-alih URL.
-- Helper `uploadInventoryImage(folder, file)` akan:
-  - menggenerasi nama file unik dengan timestamp,
-  - meminta pre-signed URL ke endpoint `VITE_R2_SIGNER_URL`,
-  - mengunggah berkas ke Cloudflare R2 dan mengembalikan `photoUrl` untuk disimpan ke database.
-- Pastikan endpoint backend melakukan validasi ukuran/tipe file sebelum menerbitkan pre-signed URL.
+- Helper `uploadInventoryImage(folder, file)` mengunggah berkas langsung menggunakan kredensial R2 dan mengembalikan URL-nya.
+- Validasi ukuran/tipe file dilakukan di sisi klien melalui schema Zod; Anda dapat menambahkan validasi tambahan pada bucket atau melalui Cloudflare Rules.
 
 ## Standar Kode
 
