@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { auth, storage } from "../../lib/firebase";
+import r2Service from "../../lib/r2";
 
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
@@ -80,11 +81,20 @@ const ProfilePictureUpload = ({
           const oldRef = ref(storage, currentPhotoURL);
           await deleteObject(oldRef);
         } catch (error) {
-          console.log('No old photo to delete or error deleting:', error);
+          console.log('Firebase Storage deletion failed:', error);
+        }
+
+        // Delete from R2 if it's an R2 URL
+        if (r2Service.isR2Url(currentPhotoURL)) {
+          try {
+            await r2Service.deleteFile(currentPhotoURL);
+          } catch (error) {
+            console.log('R2 deletion failed:', error);
+          }
         }
       }
 
-      // Upload new photo
+      // Upload new photo to Firebase Storage
       const photoRef = ref(storage, `profile-pictures/${auth.currentUser.uid}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(photoRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
@@ -114,9 +124,22 @@ const ProfilePictureUpload = ({
 
     setIsUploading(true);
     try {
-      // Delete from storage
-      const photoRef = ref(storage, currentPhotoURL);
-      await deleteObject(photoRef);
+      // Delete from Firebase Storage
+      try {
+        const photoRef = ref(storage, currentPhotoURL);
+        await deleteObject(photoRef);
+      } catch (error) {
+        console.log('Firebase Storage deletion failed, trying R2:', error);
+      }
+
+      // Delete from R2 Storage if it's an R2 URL
+      if (r2Service.isR2Url(currentPhotoURL)) {
+        try {
+          await r2Service.deleteFile(currentPhotoURL);
+        } catch (error) {
+          console.log('R2 deletion failed:', error);
+        }
+      }
 
       // Update user profile
       await updateProfile(auth.currentUser, {

@@ -10,6 +10,7 @@ import {
 import { onValue, push, ref, remove, set, update } from "firebase/database";
 
 import { database } from "../lib/firebase";
+import r2Service from "../lib/r2";
 import type { InventoryItem, Land, Loan, Room } from "../types/inventory";
 import { useAuth } from "./AuthContext";
 
@@ -166,7 +167,28 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       if (!user) {
         throw new Error("Pengguna belum masuk");
       }
-      await remove(ref(database, `inventory/${collection}/${id}`));
+
+      // Get the data before deleting to check for associated files
+      const entityRef = ref(database, `inventory/${collection}/${id}`);
+      const snapshot = await new Promise<any>((resolve, reject) => {
+        onValue(entityRef, (snap) => {
+          resolve(snap.val());
+        }, reject, { onlyOnce: true });
+      });
+
+      // Delete associated files if they exist
+      if (snapshot && snapshot.photoUrl && r2Service.isR2Url(snapshot.photoUrl)) {
+        try {
+          await r2Service.deleteFile(snapshot.photoUrl);
+          console.log(`Deleted associated file for ${collection}/${id}:`, snapshot.photoUrl);
+        } catch (error) {
+          console.error(`Failed to delete associated file for ${collection}/${id}:`, error);
+          // Continue with deletion even if file deletion fails
+        }
+      }
+
+      // Delete the entity from database
+      await remove(entityRef);
     },
     [user]
   );
