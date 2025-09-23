@@ -4,8 +4,10 @@ import * as React from "react";
 
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Logo from "./logo";
 import AppGuide from "../guide/AppGuide";
+import { useAuth } from "../../context/AuthContext";
 
 const navigation = [
   { to: "/", label: "Dashboard", icon: Home },
@@ -22,6 +24,15 @@ interface SidebarProps {
 
 const Sidebar = ({ isMobileOpen = false, onClose }: SidebarProps) => {
   const [showGuide, setShowGuide] = React.useState(false);
+  const { user, usernameFromEmail } = useAuth();
+
+  const displayName = user?.displayName?.trim() || usernameFromEmail(user?.email) || "Pengguna";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2) || "PG";
 
   return (
     <>
@@ -51,6 +62,20 @@ const Sidebar = ({ isMobileOpen = false, onClose }: SidebarProps) => {
         <div className="mb-8">
           <Logo />
         </div>
+
+        {/* Profile Section */}
+        {/* <div className="mb-8 flex items-center gap-3 rounded-xl bg-muted/30 p-3">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={user?.photoURL || undefined} alt={displayName} />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email ?? ""}</p>
+          </div>
+        </div> */}
 
         <nav className="flex flex-1 flex-col gap-1">
           <div className="mb-4">

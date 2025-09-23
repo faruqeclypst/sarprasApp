@@ -7,6 +7,7 @@ import { useAuth } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
+import ProfilePage from "./pages/ProfilePage";
 import { ToastProvider } from "./components/ui/toast";
 
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
           <Route path="/change-password" element={user ? <ChangePasswordPage /> : <Navigate to="/login" replace />} />
+          <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/login" replace />} />
           <Route
             element={user ? <InventoryLayout /> : <Navigate to="/login" replace />}
           >

@@ -54,7 +54,7 @@ const DashboardPage = () => {
             <div className="space-y-1">
               <p className="text-xs sm:text-sm font-medium text-gray-600">Nilai Aset</p>
               <p className="text-lg sm:text-xl font-bold text-gray-900">
-                Rp {(totalAssetValue / 1000000).toFixed(0)}M
+                Rp {totalAssetValue.toLocaleString('id-ID')}
               </p>
             </div>
           </CardContent>
@@ -180,7 +180,7 @@ const DashboardPage = () => {
                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                 <div>
                   <p className="font-medium text-gray-900">Total Nilai Aset</p>
-                  <p className="text-sm text-gray-600">Rp {(totalAssetValue / 1000000).toFixed(1)}M</p>
+                  <p className="text-sm text-gray-600">Rp {totalAssetValue.toLocaleString('id-ID')}</p>
                 </div>
               </div>
             </CardContent>
