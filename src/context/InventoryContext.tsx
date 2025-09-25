@@ -179,8 +179,12 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       // Delete associated files if they exist
       if (snapshot && snapshot.photoUrl && r2Service.isR2Url(snapshot.photoUrl)) {
         try {
-          await r2Service.deleteFile(snapshot.photoUrl);
-          console.log(`Deleted associated file for ${collection}/${id}:`, snapshot.photoUrl);
+          const deleteResult = await r2Service.deleteFile(snapshot.photoUrl);
+          if (deleteResult) {
+            console.log(`Successfully deleted associated file for ${collection}/${id}:`, snapshot.photoUrl);
+          } else {
+            console.warn(`File deletion returned false for ${collection}/${id}:`, snapshot.photoUrl);
+          }
         } catch (error) {
           console.error(`Failed to delete associated file for ${collection}/${id}:`, error);
           // Continue with deletion even if file deletion fails
