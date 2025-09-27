@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Building2, ClipboardList, Home, Layers, MapPin, X, Lock } from "lucide-react";
+import { Building2, ClipboardList, Home, Layers, MapPin, X, Lock, Mail, MailOpen } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "../../lib/utils";
@@ -15,6 +15,8 @@ const navigation = [
   { to: "/ruangan", label: "Ruang", icon: Building2 },
   { to: "/tanah", label: "Tanah", icon: MapPin },
   { to: "/peminjaman", label: "Peminjaman", icon: Layers },
+  { to: "/surat-masuk", label: "Surat Masuk", icon: Mail },
+  { to: "/surat-keluar", label: "Surat Keluar", icon: MailOpen },
 ];
 
 interface SidebarProps {

@@ -15,6 +15,8 @@ const InventoryPage = lazy(() => import("./pages/InventoryPage"));
 const RoomsPage = lazy(() => import("./pages/RoomsPage"));
 const LandsPage = lazy(() => import("./pages/LandsPage"));
 const LoansPage = lazy(() => import("./pages/LoansPage"));
+const IncomingMailPage = lazy(() => import("./pages/IncomingMailPage"));
+const OutgoingMailPage = lazy(() => import("./pages/OutgoingMailPage"));
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -39,6 +41,8 @@ const App = () => {
             <Route path="/ruangan" element={<RoomsPage />} />
             <Route path="/tanah" element={<LandsPage />} />
             <Route path="/peminjaman" element={<LoansPage />} />
+            <Route path="/surat-masuk" element={<IncomingMailPage />} />
+            <Route path="/surat-keluar" element={<OutgoingMailPage />} />
           </Route>
           <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
         </Routes>

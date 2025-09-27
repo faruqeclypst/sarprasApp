@@ -50,11 +50,51 @@ export interface Loan {
   notes?: string;
 }
 
+export interface IncomingMail {
+  id: string;
+  mailNumber: string;
+  date: string;
+  sender: string;
+  senderAddress: string;
+  recipient: string;
+  subject: string;
+  content: string;
+  priority: "rendah" | "normal" | "tinggi" | "urgent";
+  category: "undangan" | "pemberitahuan" | "permohonan" | "laporan" | "lainnya";
+  status: "belum_dibaca" | "sudah_dibaca" | "ditindaklanjuti" | "selesai";
+  attachmentUrl?: string;
+  notes?: string;
+  receivedBy: string;
+  processedBy?: string;
+  processedDate?: string;
+}
+
+export interface OutgoingMail {
+  id: string;
+  mailNumber: string;
+  date: string;
+  sender: string;
+  recipient: string;
+  recipientAddress: string;
+  subject: string;
+  content: string;
+  priority: "rendah" | "normal" | "tinggi" | "urgent";
+  category: "undangan" | "pemberitahuan" | "permohonan" | "laporan" | "lainnya";
+  status: "draft" | "terkirim" | "diterima" | "ditolak";
+  attachmentUrl?: string;
+  notes?: string;
+  createdBy: string;
+  sentDate?: string;
+  deliveryMethod: "pos" | "kurir" | "email" | "fax" | "langsung";
+}
+
 export interface InventorySnapshot {
   items: Record<string, InventoryItem>;
   rooms: Record<string, Room>;
   lands: Record<string, Land>;
   loans: Record<string, Loan>;
+  incomingMail: Record<string, IncomingMail>;
+  outgoingMail: Record<string, OutgoingMail>;
 }
 
-export type InventoryEntity = InventoryItem | Room | Land | Loan;
+export type InventoryEntity = InventoryItem | Room | Land | Loan | IncomingMail | OutgoingMail;

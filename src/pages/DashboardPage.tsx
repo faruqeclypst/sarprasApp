@@ -1,10 +1,10 @@
-import { Package2, PiggyBank, Building2, Activity } from "lucide-react";
+import { Package2, PiggyBank, Building2, Activity, Mail, MailOpen } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { useInventory } from "../context/InventoryContext";
 
 const DashboardPage = () => {
-  const { items, rooms, lands, loans } = useInventory();
+  const { items, rooms, lands, loans, incomingMail, outgoingMail } = useInventory();
 
   // Calculate real statistics from actual data
   const totalItems = items.length;
@@ -13,6 +13,10 @@ const DashboardPage = () => {
   const healthyRooms = rooms.filter(room => room.condition === "baik").length;
   const totalRooms = rooms.length;
   const activeLoans = loans.filter(loan => loan.status === "dipinjam").length;
+  const totalIncomingMail = incomingMail.length;
+  const totalOutgoingMail = outgoingMail.length;
+  const unreadIncomingMail = incomingMail.filter(mail => mail.status === "belum_dibaca").length;
+  const pendingOutgoingMail = outgoingMail.filter(mail => mail.status === "draft").length;
 
   const roomHealthPercentage = totalRooms > 0 ? Math.round((healthyRooms / totalRooms) * 100) : 0;
 
@@ -27,7 +31,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Stats Grid - Consistent with other pages */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         {/* Total Items Card */}
         <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-4 sm:p-6">
@@ -92,6 +96,36 @@ const DashboardPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Incoming Mail Card */}
+        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Surat Masuk</p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900">{totalIncomingMail}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Outgoing Mail Card */}
+        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <MailOpen className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">Surat Keluar</p>
+              <p className="text-lg sm:text-xl font-bold text-gray-900">{totalOutgoingMail}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content Grid - Consistent structure */}
@@ -105,7 +139,7 @@ const DashboardPage = () => {
                 Ringkasan Aset
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <CardContent className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
               <div className="text-center p-4 border border-gray-100 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">{totalItems}</p>
                 <p className="text-sm text-gray-600">Barang</p>
@@ -117,6 +151,14 @@ const DashboardPage = () => {
               <div className="text-center p-4 border border-gray-100 rounded-lg">
                 <p className="text-2xl font-bold text-purple-600">{lands.length}</p>
                 <p className="text-sm text-gray-600">Tanah</p>
+              </div>
+              <div className="text-center p-4 border border-gray-100 rounded-lg">
+                <p className="text-2xl font-bold text-orange-600">{totalIncomingMail}</p>
+                <p className="text-sm text-gray-600">Surat Masuk</p>
+              </div>
+              <div className="text-center p-4 border border-gray-100 rounded-lg">
+                <p className="text-2xl font-bold text-indigo-600">{totalOutgoingMail}</p>
+                <p className="text-sm text-gray-600">Surat Keluar</p>
               </div>
             </CardContent>
           </Card>
@@ -181,6 +223,20 @@ const DashboardPage = () => {
                 <div>
                   <p className="font-medium text-gray-900">Total Nilai Aset</p>
                   <p className="text-sm text-gray-600">Rp {totalAssetValue.toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div>
+                  <p className="font-medium text-gray-900">Surat Masuk</p>
+                  <p className="text-sm text-gray-600">{unreadIncomingMail} belum dibaca</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div>
+                  <p className="font-medium text-gray-900">Surat Keluar</p>
+                  <p className="text-sm text-gray-600">{pendingOutgoingMail} draft pending</p>
                 </div>
               </div>
             </CardContent>

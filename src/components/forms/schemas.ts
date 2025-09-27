@@ -65,7 +65,45 @@ export const loanSchema = z.object({
   photoFile: imageFileSchema,
 });
 
+export const incomingMailSchema = z.object({
+  mailNumber: z.string().min(1, "Nomor surat wajib diisi"),
+  date: z.string().min(1, "Tanggal surat wajib diisi"),
+  sender: z.string().min(2, "Pengirim wajib diisi"),
+  senderAddress: z.string().min(3, "Alamat pengirim wajib diisi"),
+  recipient: z.string().min(2, "Penerima wajib diisi"),
+  subject: z.string().min(3, "Perihal wajib diisi"),
+  content: z.string().min(5, "Isi surat wajib diisi"),
+  priority: z.enum(["rendah", "normal", "tinggi", "urgent"]),
+  category: z.enum(["undangan", "pemberitahuan", "permohonan", "laporan", "lainnya"]),
+  status: z.enum(["belum_dibaca", "sudah_dibaca", "ditindaklanjuti", "selesai"]),
+  notes: z.string().optional().or(z.literal("")),
+  receivedBy: z.string().min(2, "Nama penerima wajib diisi"),
+  processedBy: z.string().optional().or(z.literal("")),
+  processedDate: z.string().optional().or(z.literal("")),
+  attachmentFile: imageFileSchema,
+});
+
+export const outgoingMailSchema = z.object({
+  mailNumber: z.string().min(1, "Nomor surat wajib diisi"),
+  date: z.string().min(1, "Tanggal surat wajib diisi"),
+  sender: z.string().min(2, "Pengirim wajib diisi"),
+  recipient: z.string().min(2, "Penerima wajib diisi"),
+  recipientAddress: z.string().min(3, "Alamat penerima wajib diisi"),
+  subject: z.string().min(3, "Perihal wajib diisi"),
+  content: z.string().min(5, "Isi surat wajib diisi"),
+  priority: z.enum(["rendah", "normal", "tinggi", "urgent"]),
+  category: z.enum(["undangan", "pemberitahuan", "permohonan", "laporan", "lainnya"]),
+  status: z.enum(["draft", "terkirim", "diterima", "ditolak"]),
+  deliveryMethod: z.enum(["pos", "kurir", "email", "fax", "langsung"]),
+  notes: z.string().optional().or(z.literal("")),
+  createdBy: z.string().min(2, "Nama pembuat wajib diisi"),
+  sentDate: z.string().optional().or(z.literal("")),
+  attachmentFile: imageFileSchema,
+});
+
 export type InventoryItemFormValues = z.infer<typeof inventoryItemSchema>;
 export type RoomFormValues = z.infer<typeof roomSchema>;
 export type LandFormValues = z.infer<typeof landSchema>;
 export type LoanFormValues = z.infer<typeof loanSchema>;
+export type IncomingMailFormValues = z.infer<typeof incomingMailSchema>;
+export type OutgoingMailFormValues = z.infer<typeof outgoingMailSchema>;

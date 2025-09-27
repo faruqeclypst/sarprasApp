@@ -11,7 +11,7 @@ import { onValue, push, ref, remove, set, update } from "firebase/database";
 
 import { database } from "../lib/firebase";
 import r2Service from "../lib/r2";
-import type { InventoryItem, Land, Loan, Room } from "../types/inventory";
+import type { InventoryItem, Land, Loan, Room, IncomingMail, OutgoingMail } from "../types/inventory";
 import { useAuth } from "./AuthContext";
 
 export interface InventoryContextValue {
@@ -19,24 +19,34 @@ export interface InventoryContextValue {
   rooms: Room[];
   lands: Land[];
   loans: Loan[];
+  incomingMail: IncomingMail[];
+  outgoingMail: OutgoingMail[];
   allItems: InventoryItem[];
   allRooms: Room[];
   allLands: Land[];
   allLoans: Loan[];
+  allIncomingMail: IncomingMail[];
+  allOutgoingMail: OutgoingMail[];
   search: string;
   setSearch: (value: string) => void;
   createItem: (payload: Omit<InventoryItem, "id">) => Promise<void>;
   createRoom: (payload: Omit<Room, "id">) => Promise<void>;
   createLand: (payload: Omit<Land, "id">) => Promise<void>;
   createLoan: (payload: Omit<Loan, "id">) => Promise<void>;
+  createIncomingMail: (payload: Omit<IncomingMail, "id">) => Promise<void>;
+  createOutgoingMail: (payload: Omit<OutgoingMail, "id">) => Promise<void>;
   updateItem: (id: string, payload: Partial<InventoryItem>) => Promise<void>;
   updateRoom: (id: string, payload: Partial<Room>) => Promise<void>;
   updateLand: (id: string, payload: Partial<Land>) => Promise<void>;
   updateLoan: (id: string, payload: Partial<Loan>) => Promise<void>;
+  updateIncomingMail: (id: string, payload: Partial<IncomingMail>) => Promise<void>;
+  updateOutgoingMail: (id: string, payload: Partial<OutgoingMail>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
   deleteRoom: (id: string) => Promise<void>;
   deleteLand: (id: string) => Promise<void>;
   deleteLoan: (id: string) => Promise<void>;
+  deleteIncomingMail: (id: string) => Promise<void>;
+  deleteOutgoingMail: (id: string) => Promise<void>;
 }
 
 const InventoryContext = createContext<InventoryContextValue | undefined>(undefined);
@@ -52,6 +62,8 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [lands, setLands] = useState<Land[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
+  const [incomingMail, setIncomingMail] = useState<IncomingMail[]>([]);
+  const [outgoingMail, setOutgoingMail] = useState<OutgoingMail[]>([]);
   const [search, setSearch] = useState<string>("");
   const { user } = useAuth();
 
@@ -61,6 +73,8 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       setRooms([]);
       setLands([]);
       setLoans([]);
+      setIncomingMail([]);
+      setOutgoingMail([]);
       setSearch("");
       return;
     }
@@ -88,6 +102,18 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       setLoans(
         Object.entries<Loan>(value.loans ?? {}).map(([id, loan]) => ({
           ...loan,
+          id,
+        }))
+      );
+      setIncomingMail(
+        Object.entries<IncomingMail>(value.incomingMail ?? {}).map(([id, mail]) => ({
+          ...mail,
+          id,
+        }))
+      );
+      setOutgoingMail(
+        Object.entries<OutgoingMail>(value.outgoingMail ?? {}).map(([id, mail]) => ({
+          ...mail,
           id,
         }))
       );
@@ -141,6 +167,36 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
     );
   }, [loans, search]);
 
+  const filteredIncomingMail = useMemo(() => {
+    if (!search) return incomingMail;
+    const lowered = search.toLowerCase();
+    return incomingMail.filter((mail) =>
+      [
+        mail.mailNumber,
+        mail.sender,
+        mail.recipient,
+        mail.subject,
+        mail.content,
+        mail.notes ?? ""
+      ].some((value) => value.toLowerCase().includes(lowered))
+    );
+  }, [incomingMail, search]);
+
+  const filteredOutgoingMail = useMemo(() => {
+    if (!search) return outgoingMail;
+    const lowered = search.toLowerCase();
+    return outgoingMail.filter((mail) =>
+      [
+        mail.mailNumber,
+        mail.sender,
+        mail.recipient,
+        mail.subject,
+        mail.content,
+        mail.notes ?? ""
+      ].some((value) => value.toLowerCase().includes(lowered))
+    );
+  }, [outgoingMail, search]);
+
   const createEntity = useCallback(
     async <T extends object>(collection: string, payload: T) => {
       if (!user) {
@@ -177,13 +233,15 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       });
 
       // Delete associated files if they exist
-      if (snapshot && snapshot.photoUrl && r2Service.isR2Url(snapshot.photoUrl)) {
+      // Check for both photoUrl (used by inventory items) and attachmentUrl (used by mail)
+      const fileUrl = snapshot.photoUrl || snapshot.attachmentUrl;
+      if (snapshot && fileUrl && r2Service.isR2Url(fileUrl)) {
         try {
-          const deleteResult = await r2Service.deleteFile(snapshot.photoUrl);
+          const deleteResult = await r2Service.deleteFile(fileUrl);
           if (deleteResult) {
-            console.log(`Successfully deleted associated file for ${collection}/${id}:`, snapshot.photoUrl);
+            console.log(`Successfully deleted associated file for ${collection}/${id}:`, fileUrl);
           } else {
-            console.warn(`File deletion returned false for ${collection}/${id}:`, snapshot.photoUrl);
+            console.warn(`File deletion returned false for ${collection}/${id}:`, fileUrl);
           }
         } catch (error) {
           console.error(`Failed to delete associated file for ${collection}/${id}:`, error);
@@ -202,24 +260,34 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
     rooms: filteredRooms,
     lands: filteredLands,
     loans: filteredLoans,
+    incomingMail: filteredIncomingMail,
+    outgoingMail: filteredOutgoingMail,
     allItems: items,
     allRooms: rooms,
     allLands: lands,
     allLoans: loans,
+    allIncomingMail: incomingMail,
+    allOutgoingMail: outgoingMail,
     search,
     setSearch,
     createItem: (payload) => createEntity("items", payload),
     createRoom: (payload) => createEntity("rooms", payload),
     createLand: (payload) => createEntity("lands", payload),
     createLoan: (payload) => createEntity("loans", payload),
+    createIncomingMail: (payload) => createEntity("incomingMail", payload),
+    createOutgoingMail: (payload) => createEntity("outgoingMail", payload),
     updateItem: (id, payload) => updateEntity("items", id, payload),
     updateRoom: (id, payload) => updateEntity("rooms", id, payload),
     updateLand: (id, payload) => updateEntity("lands", id, payload),
     updateLoan: (id, payload) => updateEntity("loans", id, payload),
+    updateIncomingMail: (id, payload) => updateEntity("incomingMail", id, payload),
+    updateOutgoingMail: (id, payload) => updateEntity("outgoingMail", id, payload),
     deleteItem: (id) => deleteEntity("items", id),
     deleteRoom: (id) => deleteEntity("rooms", id),
     deleteLand: (id) => deleteEntity("lands", id),
     deleteLoan: (id) => deleteEntity("loans", id),
+    deleteIncomingMail: (id) => deleteEntity("incomingMail", id),
+    deleteOutgoingMail: (id) => deleteEntity("outgoingMail", id),
   };
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>;
