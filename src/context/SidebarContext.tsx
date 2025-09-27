@@ -50,7 +50,7 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
   }, []);
 
   const toggleCollapsed = () => {
-    setIsCollapsed(prev => !prev);
+    setIsCollapsed((prev: boolean) => !prev);
   };
 
   const setMobileOpen = (open: boolean) => {
