@@ -3,7 +3,7 @@
  * Replaces the Express server functionality for Cloudflare R2 operations
  */
 
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+const { S3Client, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 // R2 Configuration from environment variables
 const R2_CONFIG = {
@@ -34,7 +34,17 @@ const getS3Client = () => {
   return s3Client;
 };
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -47,7 +57,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'File key is required' });
     }
 
-    console.log('Deleting file from R2:', key);
+    console.log('=== VERCEL API: Deleting file from R2 ===');
+    console.log('Key:', key);
+    console.log('Environment check:', {
+      endpoint: R2_CONFIG.endpoint ? 'SET' : 'MISSING',
+      accessKey: R2_CONFIG.accessKeyId ? 'SET' : 'MISSING',
+      secretKey: R2_CONFIG.secretAccessKey ? 'SET' : 'MISSING',
+      bucket: R2_CONFIG.bucket ? 'SET' : 'MISSING'
+    });
 
     const client = getS3Client();
 
@@ -58,7 +75,7 @@ export default async function handler(req, res) {
 
     await client.send(deleteCommand);
 
-    console.log('Successfully deleted file from R2:', key);
+    console.log('=== VERCEL API: Successfully deleted file ===');
     return res.status(200).json({
       success: true,
       message: 'File deleted successfully',
@@ -66,15 +83,15 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error deleting file from R2:', error);
+    console.error('=== VERCEL API: Error deleting file ===', error);
 
     // If file not found, return success (it's effectively deleted)
     if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
-      console.log('File not found in R2 (already deleted):', req.body.key);
+      console.log('=== VERCEL API: File not found (already deleted) ===');
       return res.status(200).json({
         success: true,
         message: 'File not found (already deleted)',
-        key: req.body.key
+        key: req.body?.key
       });
     }
 
@@ -84,4 +101,4 @@ export default async function handler(req, res) {
       details: error.message
     });
   }
-}
+};

@@ -28,7 +28,7 @@ class R2Service {
   }
 
   /**
-    * Delete a file from R2 storage via backend proxy to avoid CORS issues
+    * Delete a file from R2 storage via Cloudflare Worker to avoid CORS issues
     * @param fileUrl - The full URL of the file to delete
     * @returns Promise<boolean> - True if deleted successfully
     */
@@ -43,10 +43,11 @@ class R2Service {
          return false;
        }
 
-       console.log('Attempting to delete R2 file via proxy:', key);
+       console.log('Attempting to delete R2 file via Cloudflare Worker:', key);
 
-       // Use Vercel API route for R2 operations
-       const response = await fetch('/api/r2/delete', {
+       // Use Cloudflare Worker for R2 operations
+       const workerUrl = import.meta.env.VITE_R2_WORKER_URL || '/api/r2/delete';
+       const response = await fetch(workerUrl, {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
@@ -59,7 +60,7 @@ class R2Service {
 
        if (response.ok) {
          const result = await response.json();
-         console.log('Successfully deleted file from R2 via proxy:', key, result);
+         console.log('Successfully deleted file from R2 via Cloudflare Worker:', key, result);
          return true;
        } else {
          // Try to get more detailed error information
@@ -73,7 +74,7 @@ class R2Service {
            // Ignore error reading response body
          }
 
-         console.error('Failed to delete file from R2 via proxy:', response.status, errorText);
+         console.error('Failed to delete file from R2 via Cloudflare Worker:', response.status, errorText);
 
          // Return true for 404 (file not found) as it's effectively deleted
          if (response.status === 404) {
@@ -84,7 +85,7 @@ class R2Service {
          return false;
        }
      } catch (error) {
-       console.error('Error deleting file from R2 via proxy:', error);
+       console.error('Error deleting file from R2 via Cloudflare Worker:', error);
        return false;
      }
    }
