@@ -39,16 +39,16 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-semibold text-gray-900">
+              <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {title}
               </DialogTitle>
             </div>
           </div>
-          <DialogDescription className="mt-2 text-sm text-gray-600">
+          <DialogDescription className="mt-2 text-sm text-gray-600 dark:text-gray-300">
             {description.replace("{itemName}", itemName)}
           </DialogDescription>
         </DialogHeader>
@@ -68,7 +68,7 @@ export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> =
             variant="destructive"
             onClick={handleConfirm}
             disabled={isLoading}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white"
           >
             {isLoading ? "Menghapus..." : "Hapus"}
           </Button>

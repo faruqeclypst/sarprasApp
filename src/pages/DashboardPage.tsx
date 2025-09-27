@@ -1,7 +1,21 @@
-import { Package2, PiggyBank, Building2, Activity, Mail, MailOpen } from "lucide-react";
+import { 
+  Package2, 
+  Wallet, 
+  Building2, 
+  Activity, 
+  Mail, 
+  MailOpen,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  BarChart3
+} from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Progress } from "../components/ui/progress";
+import { Badge } from "../components/ui/badge";
 import { useInventory } from "../context/InventoryContext";
+import { cn } from "../lib/utils";
 
 const DashboardPage = () => {
   const { items, rooms, lands, loans, incomingMail, outgoingMail } = useInventory();
@@ -21,223 +35,193 @@ const DashboardPage = () => {
   const roomHealthPercentage = totalRooms > 0 ? Math.round((healthyRooms / totalRooms) * 100) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Dashboard Sarpras</h2>
-          <p className="text-sm text-muted-foreground">Monitor inventaris sekolah</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            Dashboard Sarpras
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
+            Monitor dan kelola inventaris sekolah
+          </p>
         </div>
+        <Badge variant="outline" className="w-fit text-green-600 border-green-200">
+          <CheckCircle2 className="w-3 h-3 mr-1" />
+          Sistem Aktif
+        </Badge>
       </div>
 
-      {/* Stats Grid - Consistent with other pages */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        {/* Total Items Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Package2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-              </div>
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Package2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <span className="text-xs sm:text-sm text-muted-foreground">Items</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Total Barang</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">{totalItems}</p>
-            </div>
-          </CardContent>
+            <div className="text-xl sm:text-2xl font-bold">{totalItems}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Total Barang</div>
+          </div>
         </Card>
 
-        {/* Asset Value Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <PiggyBank className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-              </div>
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              <span className="text-xs sm:text-sm text-muted-foreground">Value</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Nilai Aset</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">
-                Rp {totalAssetValue.toLocaleString('id-ID')}
-              </p>
+            <div className="text-base sm:text-xl font-bold">
+              {totalAssetValue > 1000000 
+                ? `${(totalAssetValue / 1000000).toFixed(1)}M` 
+                : `${(totalAssetValue / 1000).toFixed(0)}K`}
             </div>
-          </CardContent>
+            <div className="text-xs sm:text-sm text-muted-foreground">Nilai Aset</div>
+          </div>
         </Card>
 
-        {/* Room Health Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-lg sm:text-xl font-bold text-purple-600">{roomHealthPercentage}%</div>
-              </div>
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              <span className="text-xs sm:text-sm text-muted-foreground">Health</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Kesehatan Ruang</p>
-              <p className="text-sm sm:text-base font-semibold text-gray-900">{healthyRooms}/{totalRooms}</p>
-            </div>
-          </CardContent>
+            <div className="text-xl sm:text-2xl font-bold">{roomHealthPercentage}%</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Ruang Sehat</div>
+          </div>
         </Card>
 
-        {/* Active Loans Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-              </div>
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              <span className="text-xs sm:text-sm text-muted-foreground">Active</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Peminjaman Aktif</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">{activeLoans}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Incoming Mail Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Surat Masuk</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">{totalIncomingMail}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Outgoing Mail Card */}
-        <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <MailOpen className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs sm:text-sm font-medium text-gray-600">Surat Keluar</p>
-              <p className="text-lg sm:text-xl font-bold text-gray-900">{totalOutgoingMail}</p>
-            </div>
-          </CardContent>
+            <div className="text-xl sm:text-2xl font-bold">{activeLoans}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground">Peminjaman</div>
+          </div>
         </Card>
       </div>
 
-      {/* Main Content Grid - Consistent structure */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+      {/* Main Content Grid */}
+      <div className="grid gap-6 sm:gap-8 grid-cols-1 lg:grid-cols-4">
         {/* Left Column - Summary */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Summary Card */}
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Ringkasan Aset
-              </CardTitle>
+        <div className="lg:col-span-3 space-y-6 sm:space-y-8">
+          {/* Asset Overview Card */}
+          <Card>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-lg sm:text-xl font-semibold">Ringkasan Aset</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-              <div className="text-center p-4 border border-gray-100 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">{totalItems}</p>
-                <p className="text-sm text-gray-600">Barang</p>
+            <CardContent className="pt-0">
+              <div className="grid gap-3 sm:gap-4 grid-cols-3 sm:grid-cols-5">
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold">{totalItems}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Barang</p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold">{totalRooms}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Ruangan</p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-lg sm:text-2xl font-bold">{lands.length}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Tanah</p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg sm:block hidden">
+                  <p className="text-lg sm:text-2xl font-bold">{totalIncomingMail}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">S. Masuk</p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg sm:block hidden">
+                  <p className="text-lg sm:text-2xl font-bold">{totalOutgoingMail}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">S. Keluar</p>
+                </div>
               </div>
-              <div className="text-center p-4 border border-gray-100 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">{totalRooms}</p>
-                <p className="text-sm text-gray-600">Ruangan</p>
-              </div>
-              <div className="text-center p-4 border border-gray-100 rounded-lg">
-                <p className="text-2xl font-bold text-purple-600">{lands.length}</p>
-                <p className="text-sm text-gray-600">Tanah</p>
-              </div>
-              <div className="text-center p-4 border border-gray-100 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">{totalIncomingMail}</p>
-                <p className="text-sm text-gray-600">Surat Masuk</p>
-              </div>
-              <div className="text-center p-4 border border-gray-100 rounded-lg">
-                <p className="text-2xl font-bold text-indigo-600">{totalOutgoingMail}</p>
-                <p className="text-sm text-gray-600">Surat Keluar</p>
+              {/* Mobile mail stats */}
+              <div className="grid gap-3 grid-cols-2 mt-3 sm:hidden">
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-lg font-bold">{totalIncomingMail}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Surat Masuk</p>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-lg font-bold">{totalOutgoingMail}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Surat Keluar</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Room Condition */}
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Kondisi Ruangan
-              </CardTitle>
+          {/* Room Condition Analysis */}
+          <Card>
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg sm:text-xl font-semibold">Kondisi Ruangan</CardTitle>
+                <Badge variant="outline" className="text-xs">{totalRooms}</Badge>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 grid-cols-3">
-                <div className="text-center">
-                  <p className="text-xl font-bold text-green-600">
+            <CardContent className="pt-0">
+              <div className="grid gap-3 sm:gap-4 grid-cols-3">
+                <div className="text-center p-4 sm:p-6 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-100 dark:border-green-900/30">
+                  <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-400">
                     {rooms.filter(room => room.condition === "baik").length}
                   </p>
-                  <p className="text-sm text-gray-600">Baik</p>
+                  <p className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400">Baik</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-yellow-600">
+                <div className="text-center p-4 sm:p-6 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
+                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600 dark:text-yellow-400 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-yellow-700 dark:text-yellow-400">
                     {rooms.filter(room => room.condition === "cukup").length}
                   </p>
-                  <p className="text-sm text-gray-600">Cukup</p>
+                  <p className="text-xs sm:text-sm font-medium text-yellow-600 dark:text-yellow-400">Cukup</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-red-600">
+                <div className="text-center p-4 sm:p-6 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/30">
+                  <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 dark:text-red-400 mx-auto mb-2" />
+                  <p className="text-xl sm:text-2xl font-bold text-red-700 dark:text-red-400">
                     {rooms.filter(room => room.condition === "rusak").length}
                   </p>
-                  <p className="text-sm text-gray-600">Rusak</p>
+                  <p className="text-xs sm:text-sm font-medium text-red-600 dark:text-red-400">Rusak</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column - Activity */}
-        <div className="space-y-6">
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Aktivitas
-              </CardTitle>
+        {/* Right Column - Quick Stats */}
+        <div className="space-y-6 sm:space-y-8">
+          <Card>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-lg sm:text-xl font-semibold">Status</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Peminjaman Aktif</p>
-                  <p className="text-sm text-gray-600">{activeLoans} transaksi</p>
+            <CardContent className="pt-0 space-y-3">
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-4 h-4 text-orange-600" />
+                  <span className="text-sm font-medium">Peminjaman</span>
                 </div>
+                <span className="text-lg font-bold">{activeLoans}</span>
               </div>
-              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Kesehatan Ruangan</p>
-                  <p className="text-sm text-gray-600">{roomHealthPercentage}% baik</p>
+              
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-2">
+                  <Building2 className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-medium">Ruang Sehat</span>
                 </div>
+                <span className="text-lg font-bold">{roomHealthPercentage}%</span>
               </div>
-              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Total Nilai Aset</p>
-                  <p className="text-sm text-gray-600">Rp {totalAssetValue.toLocaleString('id-ID')}</p>
+              
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium">S. Masuk</span>
                 </div>
+                <span className="text-lg font-bold">{totalIncomingMail}</span>
               </div>
-              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Surat Masuk</p>
-                  <p className="text-sm text-gray-600">{unreadIncomingMail} belum dibaca</p>
+              
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-2">
+                  <MailOpen className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium">S. Keluar</span>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Surat Keluar</p>
-                  <p className="text-sm text-gray-600">{pendingOutgoingMail} draft pending</p>
-                </div>
+                <span className="text-lg font-bold">{totalOutgoingMail}</span>
               </div>
             </CardContent>
           </Card>

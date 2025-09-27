@@ -39,7 +39,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
       onClick={handleExport}
       disabled={isLoading}
       variant="outline"
-      className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200"
+      className="bg-green-50 text-green-600 hover:bg-green-100 border-green-200 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900 dark:border-green-600"
     >
       <Download className="mr-2 h-4 w-4" />
       {isLoading ? "Mengekspor..." : label}

@@ -215,7 +215,7 @@ export function DataTable<T>({
       )}
 
       {/* Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -223,15 +223,17 @@ export function DataTable<T>({
               placeholder={searchPlaceholder}
               value={state.searchTerm}
               onChange={(e) => setState(prev => ({ ...prev, searchTerm: e.target.value }))}
-              className="pl-9"
+              className="pl-9 text-sm sm:text-base"
             />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setState(prev => ({ ...prev, showFilters: !prev.showFilters }))}
+            className="shrink-0"
           >
             <SlidersHorizontal className="h-4 w-4" />
+            <span className="sr-only sm:not-sr-only sm:ml-2">Filter</span>
           </Button>
         </div>
 
@@ -241,8 +243,10 @@ export function DataTable<T>({
               variant="outline"
               size="sm"
               onClick={() => setShowColumnMenu(!showColumnMenu)}
+              className="shrink-0"
             >
               <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only sm:not-sr-only sm:ml-2">Menu</span>
             </Button>
             {showColumnMenu && (
               <div className="absolute right-0 top-full z-50 mt-1 min-w-[200px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
@@ -281,8 +285,9 @@ export function DataTable<T>({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border overflow-hidden">
-        <Table>
+      <div className="rounded-md border overflow-hidden bg-card">
+        <div className="hidden sm:block">
+          <Table>
           <TableHeader>
             <TableRow>
               {columns
@@ -361,22 +366,75 @@ export function DataTable<T>({
             )}
           </TableBody>
         </Table>
+        </div>
+        
+        {/* Mobile Card View */}
+        <div className="sm:hidden space-y-3 p-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="ml-2 text-sm">Memuat...</span>
+            </div>
+          ) : currentData.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              {emptyMessage}
+            </div>
+          ) : (
+            currentData.map((item, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "bg-card border rounded-lg p-4 space-y-3 shadow-sm",
+                  onRowClick && "cursor-pointer hover:bg-muted/50 transition-colors"
+                )}
+                onClick={() => onRowClick?.(item)}
+              >
+                {columns
+                  .filter(col => state.visibleColumns.has(col.key.toString()) && col.key !== 'index')
+                  .map((column, colIndex) => {
+                    const value = column.key.toString().split('.').reduce((obj: any, key) => obj?.[key], item);
+                    return (
+                      <div key={column.key.toString()} className="flex justify-between items-start gap-3">
+                        <span className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0">
+                          {column.label}:
+                        </span>
+                        <div className="text-sm text-right min-w-0 flex-1">
+                          {column.render
+                            ? column.render(value, item, index)
+                            : value?.toString() || "-"
+                          }
+                        </div>
+                      </div>
+                    );
+                  })
+                }
+                {actions && (
+                  <div className="pt-3 mt-3 border-t border-muted">
+                    <div className="flex items-center justify-end gap-2">
+                      {actions(item)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between bg-muted/30 p-3 sm:p-4 rounded-lg">
+          <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
             Menampilkan {startIndex + 1}-{Math.min(endIndex, state.filteredData.length)} dari {state.filteredData.length} data
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm">Baris per halaman:</span>
+              <span className="text-xs sm:text-sm shrink-0">Baris per halaman:</span>
               <select
                 value={state.pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="h-8 rounded border border-input bg-background px-2 text-sm"
+                className="h-8 sm:h-9 rounded border border-input bg-background px-2 text-xs sm:text-sm touch-manipulation"
               >
                 {[5, 10, 20, 50].map((size) => (
                   <option key={size} value={size}>
@@ -392,43 +450,79 @@ export function DataTable<T>({
                 size="sm"
                 onClick={() => handlePageChange(1)}
                 disabled={state.currentPage === 1}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
-                <ChevronsLeft className="h-4 w-4" />
+                <ChevronsLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="sr-only">First page</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(state.currentPage - 1)}
                 disabled={state.currentPage === 1}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="sr-only">Previous page</span>
               </Button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (state.currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (state.currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = state.currentPage - 2 + i;
-                  }
+                {/* Show fewer page numbers on mobile */}
+                <div className="flex items-center gap-1">
+                  {/* Mobile: 3 pages max, Desktop: 5 pages max */}
+                  <div className="sm:hidden flex items-center gap-1">
+                    {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 3) {
+                        pageNum = i + 1;
+                      } else if (state.currentPage <= 2) {
+                        pageNum = i + 1;
+                      } else if (state.currentPage >= totalPages - 1) {
+                        pageNum = totalPages - 2 + i;
+                      } else {
+                        pageNum = state.currentPage - 1 + i;
+                      }
 
-                  return (
-                    <Button
-                      key={pageNum}
-                      variant={state.currentPage === pageNum ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(pageNum)}
-                      className="w-8 h-8 p-0"
-                    >
-                      {pageNum}
-                    </Button>
-                  );
-                })}
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={state.currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                          className="h-8 w-8 p-0 text-xs"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (state.currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (state.currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = state.currentPage - 2 + i;
+                      }
+
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={state.currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                          className="h-9 w-9 p-0 text-sm"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
               <Button
@@ -436,16 +530,20 @@ export function DataTable<T>({
                 size="sm"
                 onClick={() => handlePageChange(state.currentPage + 1)}
                 disabled={state.currentPage === totalPages}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="sr-only">Next page</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handlePageChange(totalPages)}
                 disabled={state.currentPage === totalPages}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
-                <ChevronsRight className="h-4 w-4" />
+                <ChevronsRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="sr-only">Last page</span>
               </Button>
             </div>
           </div>

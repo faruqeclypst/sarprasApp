@@ -8,7 +8,6 @@ import {
   Search,
   Settings,
   Users,
-  X,
 } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -320,6 +319,147 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
       ),
     },
     {
+      id: "incoming-mail",
+      title: "Surat Masuk",
+      icon: <FileText className="h-5 w-5" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold mb-2">Menambah Surat Masuk</h4>
+            <ol className="space-y-2 text-sm list-decimal list-inside">
+              <li>Klik menu "Surat Masuk" di sidebar</li>
+              <li>Klik tombol "Tambah Surat" (+)</li>
+              <li>Isi form data surat masuk:
+                <ul className="ml-4 mt-1 space-y-1 list-disc">
+                  <li>Nomor surat (wajib unik)</li>
+                  <li>Tanggal surat dan tanggal diterima</li>
+                  <li>Pengirim/asal surat</li>
+                  <li>Perihal/subjek surat</li>
+                  <li>Klasifikasi surat</li>
+                  <li>Status (belum dibaca/sudah dibaca)</li>
+                  <li>Keterangan tambahan</li>
+                  <li>Upload file PDF surat</li>
+                </ul>
+              </li>
+              <li>Klik "Simpan" untuk menyimpan data</li>
+            </ol>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Klasifikasi Surat</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• <strong>Penting:</strong> Surat yang memerlukan tindakan segera</li>
+              <li>• <strong>Biasa:</strong> Surat rutin atau informasi umum</li>
+              <li>• <strong>Rahasia:</strong> Surat dengan tingkat kerahasiaan tinggi</li>
+              <li>• <strong>Undangan:</strong> Surat undangan kegiatan/acara</li>
+              <li>• <strong>Edaran:</strong> Surat edaran dari instansi terkait</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Manajemen Status</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• <strong>Belum Dibaca:</strong> Surat baru yang perlu ditindaklanjuti</li>
+              <li>• <strong>Sudah Dibaca:</strong> Surat yang telah diproses</li>
+              <li>• Gunakan filter status untuk melihat surat yang perlu perhatian</li>
+              <li>• Update status setelah surat ditindaklanjuti</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Tips Pengelolaan Surat Masuk</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• Scan surat dengan resolusi tinggi (300 DPI)</li>
+              <li>• Gunakan format PDF untuk konsistensi</li>
+              <li>• Buat nomor urut yang sistematis</li>
+              <li>• Backup file surat secara berkala</li>
+              <li>• Arsipkan surat fisik dengan rapi</li>
+            </ul>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "outgoing-mail",
+      title: "Surat Keluar",
+      icon: <FileText className="h-5 w-5" />,
+      content: (
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold mb-2">Membuat Surat Keluar</h4>
+            <ol className="space-y-2 text-sm list-decimal list-inside">
+              <li>Buka menu "Surat Keluar" di sidebar</li>
+              <li>Klik tombol "Tambah Surat" (+)</li>
+              <li>Isi form data surat keluar:
+                <ul className="ml-4 mt-1 space-y-1 list-disc">
+                  <li>Nomor surat (otomatis/manual)</li>
+                  <li>Tanggal surat</li>
+                  <li>Tujuan/penerima surat</li>
+                  <li>Perihal/subjek surat</li>
+                  <li>Jenis surat (resmi/undangan/edaran)</li>
+                  <li>Status (draft/dikirim/selesai)</li>
+                  <li>Keterangan tambahan</li>
+                  <li>Upload file surat yang telah dibuat</li>
+                </ul>
+              </li>
+              <li>Simpan data surat</li>
+            </ol>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Jenis Surat Keluar</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• <strong>Surat Resmi:</strong> Surat dinas/kedinasan</li>
+              <li>• <strong>Undangan:</strong> Undangan rapat/acara</li>
+              <li>• <strong>Edaran:</strong> Pemberitahuan umum</li>
+              <li>• <strong>Keterangan:</strong> Surat keterangan siswa/guru</li>
+              <li>• <strong>Rekomendasi:</strong> Surat rekomendasi/persetujuan</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Status Surat Keluar</h4>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">Draft</Badge>
+                <span className="text-sm">Surat dalam tahap penyusunan</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="default">Dikirim</Badge>
+                <span className="text-sm">Surat telah dikirim ke penerima</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">Selesai</Badge>
+                <span className="text-sm">Proses surat telah selesai</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Template Surat</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• Gunakan template resmi sekolah</li>
+              <li>• Pastikan kop surat dan logo sesuai</li>
+              <li>• Periksa nomor surat tidak duplikat</li>
+              <li>• Gunakan bahasa formal dan baku</li>
+              <li>• Sertakan tanda tangan dan stempel resmi</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Arsip dan Distribusi</h4>
+            <ul className="space-y-1 text-sm">
+              <li>• Simpan salinan surat di arsip</li>
+              <li>• Catat tanggal dan cara pengiriman</li>
+              <li>• Dokumentasikan tanda terima jika ada</li>
+              <li>• Follow up surat penting sesuai kebutuhan</li>
+              <li>• Update status setelah mendapat balasan</li>
+            </ul>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: "tips",
       title: "Tips & Trik",
       icon: <Search className="h-5 w-5" />,
@@ -398,15 +538,10 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Panduan Aplikasi Inventory Sekolah
-            </DialogTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            Panduan Aplikasi Inventory Sekolah
+          </DialogTitle>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex">

@@ -143,13 +143,13 @@ const InventoryPage = () => {
     : undefined;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Inventaris Barang</h2>
-          <p className="text-sm text-muted-foreground">Kelola seluruh aset barang sekolah beserta kondisi terkini.</p>
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Inventaris Barang</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">Kelola seluruh aset barang sekolah beserta kondisi terkini.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Dialog
             open={isDialogOpen}
             onOpenChange={(open) => {
@@ -165,12 +165,14 @@ const InventoryPage = () => {
                 onClick={() => {
                   handleCreateClick();
                 }}
+                className="w-full sm:w-auto"
+                size="lg"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Tambah Barang
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-xs sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{dialogMode === "edit" ? "Edit Barang" : "Tambah Barang"}</DialogTitle>
               </DialogHeader>
@@ -183,7 +185,7 @@ const InventoryPage = () => {
               />
             </DialogContent>
           </Dialog>
-          <ExportButton onExport={handleExportInventory} />
+          <ExportButton onExport={handleExportInventory} className="w-full sm:w-auto" />
         </div>
       </div>
       <InventoryTable items={items} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />

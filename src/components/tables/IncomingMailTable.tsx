@@ -130,100 +130,170 @@ const IncomingMailTable = ({ incomingMail, onEdit, onDelete }: IncomingMailTable
     <div className="flex justify-end gap-2">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300">
+          <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950 dark:hover:border-blue-500">
             Detail
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Detail Surat Masuk</DialogTitle>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="text-xl font-bold">Detail Surat Masuk</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">Informasi lengkap surat masuk</p>
           </DialogHeader>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-sm">
-                <div className="text-muted-foreground">No. Surat</div>
-                <div className="col-span-2 font-medium">{mail.mailNumber}</div>
-                <div className="text-muted-foreground">Tanggal</div>
-                <div className="col-span-2 font-medium">{new Date(mail.date).toLocaleString("id-ID")}</div>
-                <div className="text-muted-foreground">Pengirim</div>
-                <div className="col-span-2 font-medium">{mail.sender}</div>
-                <div className="text-muted-foreground">Alamat Pengirim</div>
-                <div className="col-span-2 font-medium">{mail.senderAddress}</div>
-                <div className="text-muted-foreground">Penerima</div>
-                <div className="col-span-2 font-medium">{mail.recipient}</div>
-                <div className="text-muted-foreground">Perihal</div>
-                <div className="col-span-2 font-medium">{mail.subject}</div>
-                <div className="text-muted-foreground">Kategori</div>
-                <div className="col-span-2">
-                  <Badge variant="outline">{categoryLabels[mail.category]}</Badge>
+          
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Left column - Main Information */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information Section */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-primary rounded-full"></div>
+                  Informasi Dasar
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Surat</label>
+                    <p className="font-medium">{mail.mailNumber}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tanggal</label>
+                    <p className="font-medium">{new Date(mail.date).toLocaleDateString("id-ID")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pengirim</label>
+                    <p className="font-medium">{mail.sender}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Penerima</label>
+                    <p className="font-medium">{mail.recipient}</p>
+                  </div>
                 </div>
-                <div className="text-muted-foreground">Prioritas</div>
-                <div className="col-span-2">
-                  <Badge 
-                    variant={
-                      mail.priority === "urgent" ? "destructive" : 
-                      mail.priority === "tinggi" ? "secondary" : 
-                      "outline"
-                    }
-                  >
-                    {priorityLabels[mail.priority]}
-                  </Badge>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Alamat Pengirim</label>
+                  <p className="font-medium text-sm">{mail.senderAddress}</p>
                 </div>
-                <div className="text-muted-foreground">Status</div>
-                <div className="col-span-2">
-                  <Badge 
-                    variant={
-                      mail.status === "selesai" ? "default" : 
-                      mail.status === "ditindaklanjuti" ? "secondary" : 
-                      "outline"
-                    }
-                  >
-                    {statusLabels[mail.status]}
-                  </Badge>
+              </div>
+
+              {/* Subject and Content Section */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                  Perihal & Isi Surat
+                </h3>
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Perihal</label>
+                    <p className="font-medium">{mail.subject}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Isi Surat</label>
+                    <div className="bg-card border rounded-md p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                      {mail.content}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-muted-foreground">Diterima Oleh</div>
-                <div className="col-span-2 font-medium">{mail.receivedBy}</div>
-                {mail.processedBy && (
-                  <>
-                    <div className="text-muted-foreground">Diproses Oleh</div>
-                    <div className="col-span-2 font-medium">{mail.processedBy}</div>
-                  </>
-                )}
-                {mail.processedDate && (
-                  <>
-                    <div className="text-muted-foreground">Tanggal Diproses</div>
-                    <div className="col-span-2 font-medium">{new Date(mail.processedDate).toLocaleString("id-ID")}</div>
-                  </>
-                )}
-                <div className="text-muted-foreground col-span-3 font-medium mt-2">Isi Surat:</div>
-                <div className="col-span-3 whitespace-pre-wrap text-sm bg-muted/30 p-3 rounded">{mail.content}</div>
+              </div>
+
+              {/* Status and Processing Section */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-green-500 rounded-full"></div>
+                  Status & Pemrosesan
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Kategori</label>
+                    <Badge variant="outline" className="w-fit">{categoryLabels[mail.category]}</Badge>
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prioritas</label>
+                    <Badge
+                      className="w-fit"
+                      variant={
+                        mail.priority === "urgent" ? "destructive" :
+                        mail.priority === "tinggi" ? "secondary" :
+                        "outline"
+                      }
+                    >
+                      {priorityLabels[mail.priority]}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</label>
+                    <Badge
+                      className="w-fit"
+                      variant={
+                        mail.status === "selesai" ? "default" :
+                        mail.status === "ditindaklanjuti" ? "secondary" :
+                        "outline"
+                      }
+                    >
+                      {statusLabels[mail.status]}
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Diterima Oleh</label>
+                    <p className="font-medium">{mail.receivedBy}</p>
+                  </div>
+                  {mail.processedBy && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Diproses Oleh</label>
+                      <p className="font-medium">{mail.processedBy}</p>
+                    </div>
+                  )}
+                  {mail.processedDate && (
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tanggal Diproses</label>
+                      <p className="font-medium">{new Date(mail.processedDate).toLocaleDateString("id-ID")}</p>
+                    </div>
+                  )}
+                </div>
                 {mail.notes && (
-                  <>
-                    <div className="text-muted-foreground">Catatan</div>
-                    <div className="col-span-2 whitespace-pre-wrap">{mail.notes}</div>
-                  </>
+                  <div className="space-y-2 pt-2 border-t">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Catatan</label>
+                    <div className="bg-card border rounded-md p-3 text-sm whitespace-pre-wrap">
+                      {mail.notes}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-            <div className="flex items-start justify-center">
-              {mail.attachmentUrl ? (
-                <img src={mail.attachmentUrl} alt={`Lampiran ${mail.subject}`} className="max-h-[70vh] sm:max-h-[60vh] md:max-h-[55vh] lg:max-h-[50vh] xl:max-h-[45vh] w-auto max-w-full rounded object-contain" />
-              ) : (
-                <div className="h-48 w-48 rounded bg-muted ring-1 ring-border flex items-center justify-center">
-                  <span className="text-muted-foreground text-sm">Tidak ada lampiran</span>
+
+            {/* Right column - Attachment */}
+            <div className="lg:col-span-1">
+              <div className="bg-muted/20 rounded-lg p-4 h-fit sticky top-4">
+                <h3 className="font-semibold text-base flex items-center gap-2 mb-4">
+                  <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
+                  Lampiran
+                </h3>
+                <div className="flex items-center justify-center">
+                  {mail.attachmentUrl ? (
+                    <img 
+                      src={mail.attachmentUrl} 
+                      alt={`Lampiran ${mail.subject}`} 
+                      className="w-full max-h-[400px] object-contain rounded-lg border shadow-sm" 
+                    />
+                  ) : (
+                    <div className="w-full h-48 rounded-lg bg-muted border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center text-muted-foreground">
+                      <svg className="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <span className="text-sm font-medium">Tidak ada lampiran</span>
+                      <span className="text-xs">Lampiran tidak tersedia</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      <Button variant="secondary" size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200" onClick={() => onEdit(mail)}>
+      <Button variant="secondary" size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900 dark:border-green-600" onClick={() => onEdit(mail)}>
         Edit
       </Button>
       <Button
         variant="destructive"
         size="sm"
-        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200 shadow-sm"
+        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200 shadow-sm dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900 dark:border-red-600"
         onClick={() => onDelete(mail)}
       >
         Hapus

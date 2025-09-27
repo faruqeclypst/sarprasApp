@@ -73,58 +73,158 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
     <div className="flex justify-end gap-2">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300">
+          <Button variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-950 dark:hover:border-blue-500">
             Detail
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Detail Tanah</DialogTitle>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="text-xl font-bold">Detail Tanah</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">Informasi lengkap aset tanah</p>
           </DialogHeader>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-x-3 gap-y-2 text-sm">
-                <div className="text-muted-foreground">Lokasi</div>
-                <div className="col-span-2 font-medium">{land.locationName}</div>
-                <div className="text-muted-foreground">Kode Lokasi</div>
-                <div className="col-span-2 font-medium">{land.locationCode}</div>
-                <div className="text-muted-foreground">Luas</div>
-                <div className="col-span-2 font-medium">{land.area.toLocaleString("id-ID")} m²</div>
-                <div className="text-muted-foreground">Tahun Perolehan</div>
-                <div className="col-span-2 font-medium">{land.acquisitionYear}</div>
-                <div className="text-muted-foreground">Alamat</div>
-                <div className="col-span-2 whitespace-pre-wrap">{land.address}</div>
-                <div className="text-muted-foreground">No. Sertifikat</div>
-                <div className="col-span-2 font-medium">{land.certificateNumber}</div>
-                <div className="text-muted-foreground">Asal</div>
-                <div className="col-span-2 font-medium">{land.origin}</div>
-                <div className="text-muted-foreground">Harga</div>
-                <div className="col-span-2 font-medium">Rp {land.price.toLocaleString("id-ID")}</div>
-                {land.description ? (
-                  <>
-                    <div className="text-muted-foreground">Keterangan</div>
-                    <div className="col-span-2 whitespace-pre-wrap">{land.description}</div>
-                  </>
-                ) : null}
+          
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Left column - Main Information */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information Section */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-primary rounded-full"></div>
+                  Informasi Lokasi
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nama Lokasi</label>
+                    <p className="font-medium">{land.locationName}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Kode Lokasi</label>
+                    <p className="font-medium font-mono text-sm">{land.locationCode}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Luas Tanah</label>
+                    <p className="font-bold text-lg text-blue-600 dark:text-blue-400">{land.area.toLocaleString("id-ID")} m²</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tahun Perolehan</label>
+                    <p className="font-medium">{land.acquisitionYear}</p>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Alamat Lengkap</label>
+                  <div className="bg-card border rounded-md p-3 text-sm whitespace-pre-wrap">
+                    {land.address}
+                  </div>
+                </div>
+              </div>
+
+              {/* Legal & Financial Information Section */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-green-500 rounded-full"></div>
+                  Informasi Legal & Keuangan
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">No. Sertifikat</label>
+                    <p className="font-medium font-mono text-sm">{land.certificateNumber}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Asal Perolehan</label>
+                    <p className="font-medium">{land.origin}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nilai Tanah</label>
+                    <p className="font-bold text-lg text-green-600 dark:text-green-400">Rp {land.price.toLocaleString("id-ID")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Harga per m²</label>
+                    <p className="font-medium">Rp {Math.round(land.price / land.area).toLocaleString("id-ID")}/m²</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Information Section */}
+              {land.description && (
+                <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                  <h3 className="font-semibold text-base flex items-center gap-2">
+                    <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
+                    Keterangan Tambahan
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Deskripsi</label>
+                    <div className="bg-card border rounded-md p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                      {land.description}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Summary Statistics */}
+              <div className="bg-muted/20 rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-base flex items-center gap-2">
+                  <div className="w-1 h-5 bg-purple-500 rounded-full"></div>
+                  Ringkasan Aset
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-card rounded-lg border">
+                    <p className="text-2xl font-bold text-primary">{land.area.toLocaleString("id-ID")}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Meter Persegi</p>
+                  </div>
+                  <div className="text-center p-3 bg-card rounded-lg border">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{Math.round(land.price / 1000000)}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Juta Rupiah</p>
+                  </div>
+                  <div className="text-center p-3 bg-card rounded-lg border">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{new Date().getFullYear() - land.acquisitionYear}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Tahun Kepemilikan</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-start justify-center">
-              {land.photoUrl ? (
-                <img src={land.photoUrl} alt={`Foto ${land.locationName}`} className="max-h-[70vh] sm:max-h-[60vh] md:max-h-[55vh] lg:max-h-[50vh] xl:max-h-[45vh] w-auto max-w-full rounded object-contain" />
-              ) : (
-                <div className="h-48 w-48 rounded bg-muted ring-1 ring-border" />
-              )}
+
+            {/* Right column - Photo */}
+            <div className="lg:col-span-1">
+              <div className="bg-muted/20 rounded-lg p-4 h-fit sticky top-4">
+                <h3 className="font-semibold text-base flex items-center gap-2 mb-4">
+                  <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
+                  Foto Tanah
+                </h3>
+                <div className="flex items-center justify-center">
+                  {land.photoUrl ? (
+                    <div className="space-y-3 w-full">
+                      <img 
+                        src={land.photoUrl} 
+                        alt={`Foto ${land.locationName}`} 
+                        className="w-full max-h-[400px] object-cover rounded-lg border shadow-sm" 
+                      />
+                      <div className="text-center">
+                        <p className="text-xs font-medium">{land.locationName}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-48 rounded-lg bg-muted border-2 border-dashed border-muted-foreground/30 flex flex-col items-center justify-center text-muted-foreground">
+                      <svg className="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm font-medium">Tidak ada foto</span>
+                      <span className="text-xs">Foto tanah tidak tersedia</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-      <Button variant="secondary" size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200" onClick={() => onEdit(land)}>
+      <Button variant="secondary" size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900 dark:border-green-600" onClick={() => onEdit(land)}>
         Edit
       </Button>
       <Button
         variant="destructive"
         size="sm"
-        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200 shadow-sm"
+        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200 shadow-sm dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900 dark:border-red-600"
         onClick={() => onDelete(land)}
       >
         Hapus

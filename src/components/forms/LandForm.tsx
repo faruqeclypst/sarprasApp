@@ -72,65 +72,95 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <FormField id="locationName" label="Nama Lokasi" error={errors.locationName}>
-          <Input id="locationName" {...register("locationName")} />
-        </FormField>
-        <FormField id="locationCode" label="Kode Lokasi" error={errors.locationCode}>
-          <Input id="locationCode" {...register("locationCode")} />
-        </FormField>
-        <FormField id="area" label="Luas Tanah (m²)" error={errors.area}>
-          <Input id="area" type="number" step="0.01" min={0} {...register("area", { valueAsNumber: true })} />
-        </FormField>
-        <FormField id="acquisitionYear" label="Tahun Pengadaan" error={errors.acquisitionYear}>
-          <Input
-            id="acquisitionYear"
-            type="number"
-            min={1950}
-            max={new Date().getFullYear()}
-            {...register("acquisitionYear", { valueAsNumber: true })}
-          />
-        </FormField>
-        <FormField id="certificateNumber" label="No. Sertifikat" error={errors.certificateNumber}>
-          <Input id="certificateNumber" {...register("certificateNumber")} />
-        </FormField>
-        <FormField id="origin" label="Asal" error={errors.origin}>
-          <Input id="origin" {...register("origin")} />
-        </FormField>
-        <FormField id="price" label="Harga" error={errors.price}>
-          <Input id="price" type="number" min={0} step={1000} {...register("price", { valueAsNumber: true })} />
-        </FormField>
-      </div>
-      <FormField id="address" label="Alamat" error={errors.address}>
-        <Textarea id="address" rows={3} {...register("address")} />
-      </FormField>
-      <FormField id="description" label="Keterangan" error={errors.description}>
-        <Textarea id="description" rows={3} {...register("description")} />
-      </FormField>
-      <FormField
-        id="photoFile"
-        label="Foto Tanah"
-        error={errors.photoFile}
-        description="Format JPG, PNG, atau WEBP"
-      >
-        <Controller
-          control={control}
-          name="photoFile"
-          render={({ field }) => (
-            <FileDropInput
-              id="photoFile"
-              value={field.value}
-              onChange={field.onChange}
-              existingUrl={existingPhotoUrl}
-              accept="image/*"
-              placeholder="Seret & lepas foto tanah di sini atau klik untuk memilih"
+      {/* Basic Information Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Informasi Dasar</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="locationName" label="Nama Lokasi" error={errors.locationName}>
+            <Input id="locationName" {...register("locationName")} />
+          </FormField>
+          <FormField id="locationCode" label="Kode Lokasi" error={errors.locationCode}>
+            <Input id="locationCode" {...register("locationCode")} />
+          </FormField>
+          <FormField id="area" label="Luas Tanah (m²)" error={errors.area}>
+            <Input id="area" type="number" step="0.01" min={0} {...register("area", { valueAsNumber: true })} />
+          </FormField>
+          <FormField id="acquisitionYear" label="Tahun Pengadaan" error={errors.acquisitionYear}>
+            <Input
+              id="acquisitionYear"
+              type="number"
+              min={1950}
+              max={new Date().getFullYear()}
+              {...register("acquisitionYear", { valueAsNumber: true })}
             />
-          )}
-        />
-      </FormField>
+          </FormField>
+          <FormField id="certificateNumber" label="No. Sertifikat" error={errors.certificateNumber}>
+            <Input id="certificateNumber" {...register("certificateNumber")} />
+          </FormField>
+          <FormField id="origin" label="Asal" error={errors.origin}>
+            <Input id="origin" {...register("origin")} />
+          </FormField>
+        </div>
+      </div>
+
+      {/* Value & Pricing Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Nilai & Harga</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="price" label="Harga" error={errors.price}>
+            <Input id="price" type="number" min={0} step={1000} {...register("price", { valueAsNumber: true })} />
+          </FormField>
+        </div>
+      </div>
+
+      {/* Location & Description Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Lokasi & Keterangan</h4>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <FormField id="address" label="Alamat" error={errors.address}>
+              <Textarea id="address" rows={2} {...register("address")} className="resize-none" />
+            </FormField>
+          </div>
+          <div className="sm:col-span-2">
+            <FormField id="description" label="Keterangan" error={errors.description}>
+              <Textarea id="description" rows={2} {...register("description")} className="resize-none" />
+            </FormField>
+          </div>
+        </div>
+      </div>
+      {/* Documentation Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Dokumentasi</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField
+              id="photoFile"
+              label="Foto Tanah"
+              error={errors.photoFile}
+              description="Format JPG, PNG, atau WEBP"
+            >
+              <Controller
+                control={control}
+                name="photoFile"
+                render={({ field }) => (
+                  <FileDropInput
+                    id="photoFile"
+                    value={field.value}
+                    onChange={field.onChange}
+                    existingUrl={existingPhotoUrl}
+                    accept="image/*"
+                    placeholder="Seret & lepas foto tanah di sini atau klik untuk memilih"
+                  />
+                )}
+              />
+            </FormField>
+          </div>
+        </div>
+      </div>
       <Button
         type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors"
+        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg shadow-sm transition-colors"
         disabled={isSubmitting}
       >
         {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}

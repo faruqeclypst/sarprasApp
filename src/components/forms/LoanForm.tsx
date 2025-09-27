@@ -72,65 +72,87 @@ const LoanForm = ({ defaultValues, items, onSubmit, submitLabel, existingPhotoUr
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2">
-        <FormField id="loanDate" label="Tanggal Peminjaman" error={errors.loanDate}>
-          <Input id="loanDate" type="date" {...register("loanDate")} />
-        </FormField>
-        <FormField id="returnDate" label="Tanggal Pengembalian" error={errors.returnDate}>
-          <Input id="returnDate" type="date" {...register("returnDate")} />
-        </FormField>
-        <FormField id="itemId" label="Barang" error={errors.itemId}>
-          <Select id="itemId" disabled={!hasItems} {...register("itemId")}>
-            <option value="">Pilih Barang</option>
-            {items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-        <FormField id="itemName" label="Nama Barang" error={errors.itemName}>
-          <Input id="itemName" {...register("itemName")} />
-        </FormField>
-        <FormField id="borrowerName" label="Nama Peminjam" error={errors.borrowerName}>
-          <Input id="borrowerName" {...register("borrowerName")} />
-        </FormField>
-        <FormField id="status" label="Status" error={errors.status}>
-          <Select id="status" {...register("status")}>
-            <option value="">Pilih Status</option>
-            <option value="dipinjam">Dipinjam</option>
-            <option value="dikembalikan">Dikembalikan</option>
-          </Select>
-        </FormField>
-        <FormField
-          id="photoFile"
-          label="Foto Dokumentasi"
-          error={errors.photoFile}
-          description="Format JPG, PNG, atau WEBP"
-        >
-          <Controller
-            control={control}
-            name="photoFile"
-            render={({ field }) => (
-              <FileDropInput
-                id="photoFile"
-                value={field.value}
-                onChange={field.onChange}
-                existingUrl={existingPhotoUrl}
-              />
-            )}
-          />
-        </FormField>
+      {/* Loan Information Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Informasi Peminjaman</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="loanDate" label="Tanggal Pinjam" error={errors.loanDate}>
+            <Input id="loanDate" type="date" {...register("loanDate")} />
+          </FormField>
+          <FormField id="returnDate" label="Tanggal Kembali" error={errors.returnDate}>
+            <Input id="returnDate" type="date" {...register("returnDate")} />
+          </FormField>
+          <FormField id="status" label="Status" error={errors.status}>
+            <Select id="status" {...register("status")}>
+              <option value="">Pilih Status</option>
+              <option value="dipinjam">Dipinjam</option>
+              <option value="dikembalikan">Dikembalikan</option>
+            </Select>
+          </FormField>
+        </div>
       </div>
-      <FormField id="notes" label="Keterangan" error={errors.notes}>
-        <Textarea id="notes" rows={3} {...register("notes")} />
-      </FormField>
+
+      {/* Item & Borrower Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Barang & Peminjam</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="itemId" label="Barang" error={errors.itemId}>
+            <Select id="itemId" disabled={!hasItems} {...register("itemId")}>
+              <option value="">Pilih Barang</option>
+              {items.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField id="itemName" label="Nama Barang" error={errors.itemName}>
+            <Input id="itemName" {...register("itemName")} />
+          </FormField>
+          <FormField id="borrowerName" label="Nama Peminjam" error={errors.borrowerName}>
+            <Input id="borrowerName" {...register("borrowerName")} />
+          </FormField>
+        </div>
+      </div>
+
+      {/* Documentation Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Dokumentasi & Keterangan</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField
+              id="photoFile"
+              label="Foto Dokumentasi"
+              error={errors.photoFile}
+              description="Format JPG, PNG, atau WEBP"
+            >
+              <Controller
+                control={control}
+                name="photoFile"
+                render={({ field }) => (
+                  <FileDropInput
+                    id="photoFile"
+                    value={field.value}
+                    onChange={field.onChange}
+                    existingUrl={existingPhotoUrl}
+                  />
+                )}
+              />
+            </FormField>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField id="notes" label="Keterangan" error={errors.notes}>
+              <Textarea id="notes" rows={2} {...register("notes")} className="resize-none" />
+            </FormField>
+          </div>
+        </div>
+      </div>
       {!hasItems ? (
         <p className="text-sm text-destructive">Tambahkan data barang terlebih dahulu sebelum mencatat peminjaman.</p>
       ) : null}
       <Button
         type="submit"
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition-colors"
+        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg shadow-sm transition-colors"
         disabled={isSubmitting || !hasItems}
       >
         {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}

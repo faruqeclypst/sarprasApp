@@ -2,12 +2,49 @@ import * as React from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 
+interface DropdownMenuContextProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const DropdownMenuContext = React.createContext<DropdownMenuContextProps | undefined>(undefined);
+
+const useDropdownMenu = () => {
+  const context = React.useContext(DropdownMenuContext);
+  if (!context) {
+    throw new Error('useDropdownMenu must be used within a DropdownMenu');
+  }
+  return context;
+};
+
 interface DropdownMenuProps {
   children: React.ReactNode;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
-  return <div className="relative">{children}</div>;
+  const [open, setOpen] = React.useState(false);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown-menu]')) {
+        setOpen(false);
+      }
+    };
+    
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [open]);
+  
+  return (
+    <DropdownMenuContext.Provider value={{ open, setOpen }}>
+      <div className="relative" data-dropdown-menu>
+        {children}
+      </div>
+    </DropdownMenuContext.Provider>
+  );
 };
 
 interface DropdownMenuTriggerProps {
@@ -16,7 +53,20 @@ interface DropdownMenuTriggerProps {
 }
 
 const DropdownMenuTrigger: React.FC<DropdownMenuTriggerProps> = ({ children, asChild }) => {
-  return <div>{children}</div>;
+  const { setOpen } = useDropdownMenu();
+  
+  const handleClick = () => {
+    setOpen(true);
+  };
+  
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      onClick: handleClick,
+      ...children.props
+    });
+  }
+  
+  return <div onClick={handleClick}>{children}</div>;
 };
 
 interface DropdownMenuContentProps {
@@ -30,11 +80,22 @@ const DropdownMenuContent: React.FC<DropdownMenuContentProps> = ({
   align = "start",
   className
 }) => {
+  const { open } = useDropdownMenu();
+  
+  if (!open) return null;
+  
+  const alignmentClasses = {
+    start: "left-0",
+    center: "left-1/2 transform -translate-x-1/2",
+    end: "right-0"
+  };
+  
   return (
     <div
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+        "absolute mt-2 z-[70] min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
         "animate-in fade-in-0 zoom-in-95",
+        alignmentClasses[align],
         className
       )}
     >
@@ -54,13 +115,20 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
   onClick,
   className
 }) => {
+  const { setOpen } = useDropdownMenu();
+  
+  const handleClick = () => {
+    onClick?.();
+    setOpen(false);
+  };
+  
   return (
     <div
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground",
+        "relative flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent cursor-pointer",
         className
       )}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {children}
     </div>

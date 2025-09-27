@@ -13,13 +13,18 @@ interface FormFieldProps {
 
 const FormField = ({ id, label, error, description, children }: FormFieldProps) => {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={id}>{label}</Label>
-        {description ? <span className="text-xs text-muted-foreground">{description}</span> : null}
+    <div className="space-y-1.5 sm:space-y-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+        <Label htmlFor={id} className="text-sm sm:text-base font-medium">{label}</Label>
+        {description ? <span className="text-xs text-muted-foreground order-last sm:order-none">{description}</span> : null}
       </div>
       {children}
-      {error ? <p className="text-xs font-medium text-destructive">{error.message}</p> : null}
+      {error ? (
+        <div className="flex items-start gap-2">
+          <div className="w-1 h-1 rounded-full bg-destructive mt-2 flex-shrink-0" />
+          <p className="text-xs sm:text-sm font-medium text-destructive leading-tight">{error.message}</p>
+        </div>
+      ) : null}
     </div>
   );
 };

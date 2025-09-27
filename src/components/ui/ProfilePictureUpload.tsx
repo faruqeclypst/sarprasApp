@@ -194,7 +194,7 @@ const ProfilePictureUpload = ({
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             className={cn(
-              "absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1.5 shadow-lg transition-all duration-200",
+              "absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-full p-1.5 shadow-lg transition-all duration-200",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               size === "sm" ? "p-1" : "p-1.5"
             )}
@@ -209,7 +209,7 @@ const ProfilePictureUpload = ({
             onClick={handleRemovePhoto}
             disabled={isUploading}
             className={cn(
-              "absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100",
+              "absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               size === "sm" ? "p-1" : "p-1"
             )}

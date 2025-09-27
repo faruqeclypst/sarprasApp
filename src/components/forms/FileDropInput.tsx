@@ -115,17 +115,17 @@ const FileDropInput = ({
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-muted bg-background px-6 py-8 text-center transition focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted bg-background px-4 py-4 text-center transition focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           isDragging && "border-primary bg-primary/5",
           value && "border-primary/60"
         )}
       >
         {previewUrl ? (
-          <img src={previewUrl} alt="Pratinjau unggahan" className="h-24 w-full max-w-xs rounded-md object-cover shadow-sm" />
+          <img src={previewUrl} alt="Pratinjau unggahan" className="h-16 w-16 rounded-md object-cover shadow-sm" />
         ) : existingUrl ? (
-          <img src={existingUrl} alt="Foto tersimpan" className="h-24 w-full max-w-xs rounded-md object-cover shadow-sm" />
+          <img src={existingUrl} alt="Foto tersimpan" className="h-16 w-16 rounded-md object-cover shadow-sm" />
         ) : (
-          <UploadCloud className="h-10 w-10 text-muted-foreground" />
+          <UploadCloud className="h-8 w-8 text-muted-foreground" />
         )}
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">

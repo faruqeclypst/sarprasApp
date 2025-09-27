@@ -63,81 +63,100 @@ const RoomForm = ({
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
-      {/* Responsive grid layout */}
-      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-        <FormField id="name" label="Nama Ruang" error={errors.name}>
-          <Input id="name" placeholder="Masukkan nama ruang" {...register("name")} />
-        </FormField>
-        <FormField id="buildingCode" label="Kode Gedung" error={errors.buildingCode}>
-          <Input id="buildingCode" placeholder="Masukkan kode gedung" {...register("buildingCode")} />
-        </FormField>
-        <FormField id="condition" label="Kondisi" error={errors.condition}>
-          <Select id="condition" {...register("condition")}>
-            <option value="baik">Baik</option>
-            <option value="cukup">Cukup</option>
-            <option value="rusak">Rusak</option>
-          </Select>
-        </FormField>
-        <FormField id="roomType" label="Jenis Ruang" error={errors.roomType}>
-          <Select id="roomType" {...register("roomType")}>
-            <option value="">Pilih jenis ruang</option>
-            <option value="kelas">Kelas</option>
-            <option value="laboratorium">Laboratorium</option>
-            <option value="kantor">Kantor</option>
-            <option value="ruang_rapat">Ruang Rapat</option>
-            <option value="perpustakaan">Perpustakaan</option>
-            <option value="lainnya">Lainnya</option>
-          </Select>
-        </FormField>
-        <FormField id="capacity" label="Kapasitas (orang)" error={errors.capacity}>
-          <Input
-            id="capacity"
-            type="number"
-            min="1"
-            placeholder="Jumlah kapasitas"
-            {...register("capacity", { valueAsNumber: true })}
-          />
-        </FormField>
-        <FormField id="floor" label="Lantai" error={errors.floor}>
-          <Input
-            id="floor"
-            type="number"
-            min="1"
-            placeholder="Nomor lantai"
-            {...register("floor", { valueAsNumber: true })}
-          />
-        </FormField>
-        <FormField
-          id="photoFile"
-          label="Foto Ruangan"
-          error={errors.photoFile}
-          description="Format JPG, PNG, atau WEBP"
-        >
-          <Controller
-            control={control}
-            name="photoFile"
-            render={({ field }) => (
-              <FileDropInput
-                id="photoFile"
-                value={field.value}
-                onChange={field.onChange}
-                existingUrl={existingPhotoUrl}
-              />
-            )}
-          />
-        </FormField>
+      {/* Basic Information Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Informasi Dasar</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="name" label="Nama Ruang" error={errors.name}>
+            <Input id="name" placeholder="Masukkan nama ruang" {...register("name")} />
+          </FormField>
+          <FormField id="buildingCode" label="Kode Gedung" error={errors.buildingCode}>
+            <Input id="buildingCode" placeholder="Masukkan kode gedung" {...register("buildingCode")} />
+          </FormField>
+          <FormField id="roomType" label="Jenis Ruang" error={errors.roomType}>
+            <Select id="roomType" {...register("roomType")}>
+              <option value="">Pilih jenis ruang</option>
+              <option value="kelas">Kelas</option>
+              <option value="laboratorium">Laboratorium</option>
+              <option value="kantor">Kantor</option>
+              <option value="ruang_rapat">Ruang Rapat</option>
+              <option value="perpustakaan">Perpustakaan</option>
+              <option value="lainnya">Lainnya</option>
+            </Select>
+          </FormField>
+        </div>
       </div>
 
-      {/* Full-width notes field */}
-      <FormField id="notes" label="Keterangan" error={errors.notes}>
-        <Textarea
-          id="notes"
-          rows={3}
-          placeholder="Tambahkan keterangan tambahan (opsional)"
-          {...register("notes")}
-          className="min-h-[80px] resize-none"
-        />
-      </FormField>
+      {/* Capacity & Location Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Kapasitas & Lokasi</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="capacity" label="Kapasitas (orang)" error={errors.capacity}>
+            <Input
+              id="capacity"
+              type="number"
+              min="1"
+              placeholder="Jumlah kapasitas"
+              {...register("capacity", { valueAsNumber: true })}
+            />
+          </FormField>
+          <FormField id="floor" label="Lantai" error={errors.floor}>
+            <Input
+              id="floor"
+              type="number"
+              min="1"
+              placeholder="Nomor lantai"
+              {...register("floor", { valueAsNumber: true })}
+            />
+          </FormField>
+          <FormField id="condition" label="Kondisi" error={errors.condition}>
+            <Select id="condition" {...register("condition")}>
+              <option value="baik">Baik</option>
+              <option value="cukup">Cukup</option>
+              <option value="rusak">Rusak</option>
+            </Select>
+          </FormField>
+        </div>
+      </div>
+
+      {/* Documentation Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Dokumentasi & Keterangan</h4>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField
+              id="photoFile"
+              label="Foto Ruangan"
+              error={errors.photoFile}
+              description="Format JPG, PNG, atau WEBP"
+            >
+              <Controller
+                control={control}
+                name="photoFile"
+                render={({ field }) => (
+                  <FileDropInput
+                    id="photoFile"
+                    value={field.value}
+                    onChange={field.onChange}
+                    existingUrl={existingPhotoUrl}
+                  />
+                )}
+              />
+            </FormField>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField id="notes" label="Keterangan" error={errors.notes}>
+              <Textarea
+                id="notes"
+                rows={2}
+                placeholder="Tambahkan keterangan tambahan (opsional)"
+                {...register("notes")}
+                className="min-h-[80px] resize-none"
+              />
+            </FormField>
+          </div>
+        </div>
+      </div>
 
       {/* Form footer with actions */}
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-2 pt-4 border-t">
