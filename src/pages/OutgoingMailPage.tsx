@@ -40,10 +40,15 @@ const OutgoingMailPage = () => {
         attachmentUrl = uploadResult.url;
       }
 
+      const payload: any = { ...rest };
+      if (attachmentUrl !== undefined) {
+        payload.attachmentUrl = attachmentUrl;
+      }
+
       if (dialogMode === "edit" && selectedMail) {
-        await updateOutgoingMail(selectedMail.id, { ...rest, attachmentUrl });
+        await updateOutgoingMail(selectedMail.id, payload);
       } else {
-        await createOutgoingMail({ ...rest, attachmentUrl });
+        await createOutgoingMail(payload);
       }
 
       closeDialog();

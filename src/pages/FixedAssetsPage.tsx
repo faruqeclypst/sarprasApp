@@ -1,29 +1,29 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 
-import InventoryItemForm from "../components/forms/InventoryItemForm";
-import type { InventoryItemFormValues } from "../components/forms/schemas";
+import FixedAssetForm from "../components/forms/FixedAssetForm";
+import type { FixedAssetFormValues } from "../components/forms/schemas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
-import InventoryTable from "../components/tables/InventoryTable";
+import FixedAssetTable from "../components/tables/FixedAssetTable";
 import { useInventory } from "../context/InventoryContext";
-import { uploadInventoryImage } from "../lib/storage";
-import type { InventoryItem } from "../types/inventory";
+import { uploadFixedAssetImage } from "../lib/storage";
+import type { FixedAsset } from "../types/inventory";
 import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
 import { useToast } from "../components/ui/toast";
 import { ExportButton } from "../components/ui/export-button";
 import { ImportButton } from "../components/ui/import-button";
-import { downloadInventoryImportTemplate, parseInventoryImportExcel } from "../lib/inventoryExcel";
-import { exportInventoryToExcel } from "../lib/inventoryExcelExport";
+import { downloadFixedAssetImportTemplate, parseFixedAssetImportExcel } from "../lib/fixedAssetExcel";
+import { exportFixedAssetToExcel } from "../lib/fixedAssetExcelExport";
 
-const InventoryPage = () => {
-  const { items, rooms, allRooms, createItem, updateItem, deleteItem } = useInventory();
+const FixedAssetsPage = () => {
+  const { fixedAssets, rooms, allRooms, createFixedAsset, updateFixedAsset, deleteFixedAsset } = useInventory();
   const { addToast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FixedAsset | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<FixedAsset | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -33,13 +33,13 @@ const InventoryPage = () => {
     setDialogMode("create");
   };
 
-  const handleSubmit = async (values: InventoryItemFormValues) => {
+  const handleSubmit = async (values: FixedAssetFormValues) => {
     try {
       const { photoFile, ...rest } = values;
       let photoUrl = dialogMode === "edit" ? selectedItem?.photoUrl : undefined;
 
       if (photoFile) {
-        const uploadResult = await uploadInventoryImage("inventory/items", photoFile);
+        const uploadResult = await uploadFixedAssetImage("inventory/fixedAssets", photoFile);
         photoUrl = uploadResult.url;
       }
 
@@ -49,16 +49,16 @@ const InventoryPage = () => {
       }
 
       if (dialogMode === "edit" && selectedItem) {
-        await updateItem(selectedItem.id, payload);
+        await updateFixedAsset(selectedItem.id, payload);
       } else {
-        await createItem(payload);
+        await createFixedAsset(payload);
       }
 
       closeDialog();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Gagal menyimpan barang", error);
-      alert(`Gagal menyimpan barang. ${message}`);
+      console.error("Gagal menyimpan aset tetap", error);
+      alert(`Gagal menyimpan aset tetap. ${message}`);
     }
   };
 
@@ -67,13 +67,13 @@ const InventoryPage = () => {
     setSelectedItem(null);
   };
 
-  const handleEditItem = (item: InventoryItem) => {
+  const handleEditItem = (item: FixedAsset) => {
     setDialogMode("edit");
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
 
-  const handleDeleteItem = (item: InventoryItem) => {
+  const handleDeleteItem = (item: FixedAsset) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
@@ -83,18 +83,18 @@ const InventoryPage = () => {
 
     setIsDeleting(true);
     try {
-      await deleteItem(itemToDelete.id);
+      await deleteFixedAsset(itemToDelete.id);
       addToast({
         type: "success",
         title: "Berhasil",
-        description: `Barang "${itemToDelete.name}" telah dihapus.`,
+        description: `Aset Tetap "${itemToDelete.name}" telah dihapus.`,
       });
     } catch (error) {
-      console.error("Gagal menghapus barang", error);
+      console.error("Gagal menghapus aset tetap", error);
       addToast({
         type: "error",
         title: "Gagal",
-        description: "Gagal menghapus barang. Silakan coba lagi.",
+        description: "Gagal menghapus aset tetap. Silakan coba lagi.",
       });
     } finally {
       setIsDeleting(false);
@@ -109,15 +109,15 @@ const InventoryPage = () => {
   };
 
   const handleExportInventory = () => {
-    exportInventoryToExcel({
-      items,
+    exportFixedAssetToExcel({
+      fixedAssets,
       rooms,
-      filename: "data-inventaris.xlsx",
+      filename: "data-aset-tetap.xlsx",
     });
   };
 
   const handleDownloadTemplate = () => {
-    downloadInventoryImportTemplate({
+    downloadFixedAssetImportTemplate({
       roomNames: allRooms.map((r) => r.name),
     });
   };
@@ -125,7 +125,7 @@ const InventoryPage = () => {
   const handleImportInventory = async (file: File) => {
     setIsImporting(true);
     try {
-      const parsed = await parseInventoryImportExcel(file);
+      const parsed = await parseFixedAssetImportExcel(file);
       if (parsed.length === 0) {
         addToast({
           type: "error",
@@ -145,7 +145,7 @@ const InventoryPage = () => {
           errors.push(`Baris ${i + 2}: Ruangan "${row.roomName}" tidak ditemukan. Pastikan nama ruangan sama persis.`);
           continue;
         }
-        await createItem({
+        await createFixedAsset({
           code: row.code,
           name: row.name,
           brand: row.brand,
@@ -188,10 +188,10 @@ const InventoryPage = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:items-center">
+      <div className="flex flex-col justify-between gap-3 sm:gap-4 md:flex-row md:fixedAssets-center">
         <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Inventaris Barang</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">Kelola seluruh aset barang sekolah beserta kondisi terkini.</p>
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Aset Tetap</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">Kelola seluruh aset aset tetap sekolah beserta kondisi terkini.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Dialog
@@ -213,18 +213,18 @@ const InventoryPage = () => {
                 size="lg"
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Tambah Barang
+                Tambah Aset Tetap
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-xs sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{dialogMode === "edit" ? "Edit Barang" : "Tambah Barang"}</DialogTitle>
+                <DialogTitle>{dialogMode === "edit" ? "Edit Aset Tetap" : "Tambah Aset Tetap"}</DialogTitle>
               </DialogHeader>
-              <InventoryItemForm
+              <FixedAssetForm
                 defaultValues={defaultValues}
                 rooms={allRooms.map((room) => ({ id: room.id, name: room.name }))}
                 onSubmit={handleSubmit}
-                submitLabel={dialogMode === "edit" ? "Perbarui Barang" : "Simpan Barang"}
+                submitLabel={dialogMode === "edit" ? "Perbarui Aset Tetap" : "Simpan Aset Tetap"}
                 existingPhotoUrl={selectedItem?.photoUrl}
               />
             </DialogContent>
@@ -236,14 +236,14 @@ const InventoryPage = () => {
           </Button>
         </div>
       </div>
-      <InventoryTable items={items} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />
+      <FixedAssetTable items={fixedAssets} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />
 
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
         onConfirm={handleConfirmDelete}
-        title="Hapus Barang"
-        description="Apakah Anda yakin ingin menghapus barang '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
+        title="Hapus Aset Tetap"
+        description="Apakah Anda yakin ingin menghapus aset tetap '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
         itemName={itemToDelete?.name || ""}
         isLoading={isDeleting}
       />
@@ -251,4 +251,4 @@ const InventoryPage = () => {
   );
 };
 
-export default InventoryPage;
+export default FixedAssetsPage;

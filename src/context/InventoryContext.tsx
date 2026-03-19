@@ -11,17 +11,19 @@ import { onValue, push, ref, remove, set, update } from "firebase/database";
 
 import { database } from "../lib/firebase";
 import r2Service from "../lib/r2";
-import type { InventoryItem, Land, Loan, Room, IncomingMail, OutgoingMail } from "../types/inventory";
+import type { InventoryItem, FixedAsset, Land, Loan, Room, IncomingMail, OutgoingMail } from "../types/inventory";
 import { useAuth } from "./AuthContext";
 
 export interface InventoryContextValue {
   items: InventoryItem[];
+  fixedAssets: FixedAsset[];
   rooms: Room[];
   lands: Land[];
   loans: Loan[];
   incomingMail: IncomingMail[];
   outgoingMail: OutgoingMail[];
   allItems: InventoryItem[];
+  allFixedAssets: FixedAsset[];
   allRooms: Room[];
   allLands: Land[];
   allLoans: Loan[];
@@ -30,18 +32,21 @@ export interface InventoryContextValue {
   search: string;
   setSearch: (value: string) => void;
   createItem: (payload: Omit<InventoryItem, "id">) => Promise<void>;
+  createFixedAsset: (payload: Omit<FixedAsset, "id">) => Promise<void>;
   createRoom: (payload: Omit<Room, "id">) => Promise<void>;
   createLand: (payload: Omit<Land, "id">) => Promise<void>;
   createLoan: (payload: Omit<Loan, "id">) => Promise<void>;
   createIncomingMail: (payload: Omit<IncomingMail, "id">) => Promise<void>;
   createOutgoingMail: (payload: Omit<OutgoingMail, "id">) => Promise<void>;
   updateItem: (id: string, payload: Partial<InventoryItem>) => Promise<void>;
+  updateFixedAsset: (id: string, payload: Partial<FixedAsset>) => Promise<void>;
   updateRoom: (id: string, payload: Partial<Room>) => Promise<void>;
   updateLand: (id: string, payload: Partial<Land>) => Promise<void>;
   updateLoan: (id: string, payload: Partial<Loan>) => Promise<void>;
   updateIncomingMail: (id: string, payload: Partial<IncomingMail>) => Promise<void>;
   updateOutgoingMail: (id: string, payload: Partial<OutgoingMail>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
+  deleteFixedAsset: (id: string) => Promise<void>;
   deleteRoom: (id: string) => Promise<void>;
   deleteLand: (id: string) => Promise<void>;
   deleteLoan: (id: string) => Promise<void>;
@@ -59,6 +64,7 @@ interface InventoryProviderProps {
 
 export const InventoryProvider = ({ children }: InventoryProviderProps) => {
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [fixedAssets, setFixedAssets] = useState<FixedAsset[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [lands, setLands] = useState<Land[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -70,6 +76,7 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
   useEffect(() => {
     if (!user) {
       setItems([]);
+      setFixedAssets([]);
       setRooms([]);
       setLands([]);
       setLoans([]);
@@ -83,6 +90,16 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       const value = snapshot.val() ?? {};
       setItems(
         Object.entries<InventoryItem>(value.items ?? {}).map(([id, item]) => ({
+          ...item,
+          acquisitionDate:
+            (item as any).acquisitionDate ??
+            // fallback for legacy data
+            new Date().toISOString().slice(0, 10),
+          id,
+        }))
+      );
+      setFixedAssets(
+        Object.entries<FixedAsset>(value.fixedAssets ?? {}).map(([id, item]) => ({
           ...item,
           acquisitionDate:
             (item as any).acquisitionDate ??
@@ -135,6 +152,16 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
         .some((value) => value.toLowerCase().includes(lowered))
     );
   }, [items, search]);
+
+  const filteredFixedAssets = useMemo(() => {
+    if (!search) return fixedAssets;
+    const lowered = search.toLowerCase();
+    return fixedAssets.filter((item) =>
+      [item.code, item.name, item.brand, item.specification, item.source]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(lowered))
+    );
+  }, [fixedAssets, search]);
 
   const filteredRooms = useMemo(() => {
     if (!search) return rooms;
@@ -261,12 +288,14 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
 
   const value: InventoryContextValue = {
     items: filteredItems,
+    fixedAssets: filteredFixedAssets,
     rooms: filteredRooms,
     lands: filteredLands,
     loans: filteredLoans,
     incomingMail: filteredIncomingMail,
     outgoingMail: filteredOutgoingMail,
     allItems: items,
+    allFixedAssets: fixedAssets,
     allRooms: rooms,
     allLands: lands,
     allLoans: loans,
@@ -275,18 +304,21 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
     search,
     setSearch,
     createItem: (payload) => createEntity("items", payload),
+    createFixedAsset: (payload) => createEntity("fixedAssets", payload),
     createRoom: (payload) => createEntity("rooms", payload),
     createLand: (payload) => createEntity("lands", payload),
     createLoan: (payload) => createEntity("loans", payload),
     createIncomingMail: (payload) => createEntity("incomingMail", payload),
     createOutgoingMail: (payload) => createEntity("outgoingMail", payload),
     updateItem: (id, payload) => updateEntity("items", id, payload),
+    updateFixedAsset: (id, payload) => updateEntity("fixedAssets", id, payload),
     updateRoom: (id, payload) => updateEntity("rooms", id, payload),
     updateLand: (id, payload) => updateEntity("lands", id, payload),
     updateLoan: (id, payload) => updateEntity("loans", id, payload),
     updateIncomingMail: (id, payload) => updateEntity("incomingMail", id, payload),
     updateOutgoingMail: (id, payload) => updateEntity("outgoingMail", id, payload),
     deleteItem: (id) => deleteEntity("items", id),
+    deleteFixedAsset: (id) => deleteEntity("fixedAssets", id),
     deleteRoom: (id) => deleteEntity("rooms", id),
     deleteLand: (id) => deleteEntity("lands", id),
     deleteLoan: (id) => deleteEntity("loans", id),

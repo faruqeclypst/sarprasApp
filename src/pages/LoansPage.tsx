@@ -40,10 +40,15 @@ const LoansPage = () => {
         photoUrl = uploadResult.url;
       }
 
+      const payload: any = { ...rest };
+      if (photoUrl !== undefined) {
+        payload.photoUrl = photoUrl;
+      }
+
       if (dialogMode === "edit" && selectedLoan) {
-        await updateLoan(selectedLoan.id, { ...rest, photoUrl });
+        await updateLoan(selectedLoan.id, payload);
       } else {
-        await createLoan({ ...rest, photoUrl });
+        await createLoan(payload);
       }
 
       closeDialog();

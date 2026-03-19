@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
-  Settings
+  Settings,
+  Box
 } from "lucide-react";
 import * as React from "react";
 
@@ -30,6 +31,7 @@ import { useSidebar } from "../../context/SidebarContext";
 const navigation = [
   { to: "/", label: "Dashboard", icon: Home, badge: null },
   { to: "/inventaris", label: "Barang", icon: ClipboardList, badge: null },
+  { to: "/aset-tetap", label: "Aset Tetap", icon: Box, badge: null },
   { to: "/ruangan", label: "Ruang", icon: Building2, badge: null },
   { to: "/tanah", label: "Tanah", icon: MapPin, badge: null },
   // { to: "/peminjaman", label: "Peminjaman", icon: Layers, badge: "New" },

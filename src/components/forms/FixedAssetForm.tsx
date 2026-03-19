@@ -1,0 +1,168 @@
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Select } from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import FileDropInput from "./FileDropInput";
+import FormField from "./FormField";
+import { FixedAssetFormValues, fixedAssetSchema } from "./schemas";
+
+interface FixedAssetFormProps {
+  defaultValues?: Partial<FixedAssetFormValues>;
+  rooms: { id: string; name: string }[];
+  onSubmit: (values: FixedAssetFormValues) => Promise<void>;
+  submitLabel?: string;
+  existingPhotoUrl?: string;
+}
+
+const FixedAssetForm = ({ defaultValues, rooms, onSubmit, submitLabel, existingPhotoUrl }: FixedAssetFormProps) => {
+  const hasRooms = rooms.length > 0;
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FixedAssetFormValues>({
+    resolver: zodResolver(fixedAssetSchema),
+    defaultValues: {
+      code: "",
+      name: "",
+      brand: "",
+      specification: "",
+      quantity: 0,
+      acquisitionDate: new Date().toISOString().slice(0, 10),
+      source: "",
+      roomId: rooms[0]?.id ?? "",
+      condition: "baik",
+      photoFile: undefined,
+      ...defaultValues,
+    },
+  });
+
+  useEffect(() => {
+    reset((prev) => ({ ...prev, ...defaultValues, photoFile: undefined }));
+  }, [defaultValues, reset]);
+  useEffect(() => {
+    if (rooms.length > 0) {
+      reset((prev) => ({ ...prev, roomId: prev.roomId || rooms[0].id }));
+    }
+  }, [rooms, reset]);
+
+  const submitHandler = async (values: FixedAssetFormValues) => {
+    await onSubmit(values);
+    if (!defaultValues || Object.keys(defaultValues).length === 0) {
+      reset();
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(submitHandler)} className="space-y-4 sm:space-y-6">
+      {/* Top Section - Mobile First Layout */}
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+        {/* Left Column - Basic Information */}
+        <div className="space-y-3 sm:space-y-4">
+          <h4 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide border-b border-muted pb-2">Informasi Aset Tetap</h4>
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+            <FormField id="code" label="Kode Aset Tetap" error={errors.code}>
+              <Input id="code" placeholder="Masukkan kode aset tetap" {...register("code")} />
+            </FormField>
+            <FormField id="name" label="Nama Aset Tetap" error={errors.name}>
+              <Input id="name" placeholder="Masukkan nama aset tetap" {...register("name")} />
+            </FormField>
+            <div className="sm:col-span-2">
+              <FormField id="brand" label="Merk" error={errors.brand}>
+                <Input id="brand" placeholder="Masukkan merk aset tetap" {...register("brand")} />
+              </FormField>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Documentation */}
+        <div className="space-y-3 sm:space-y-4">
+          <h4 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide border-b border-muted pb-2">Dokumentasi</h4>
+          <FormField
+            id="photoFile"
+            label="Foto Aset Tetap"
+            error={errors.photoFile}
+            description="Format JPG, PNG, atau WEBP"
+          >
+            <Controller
+              control={control}
+              name="photoFile"
+              render={({ field }) => (
+                <FileDropInput
+                  id="photoFile"
+                  value={field.value}
+                  onChange={field.onChange}
+                  existingUrl={existingPhotoUrl}
+                />
+              )}
+            />
+          </FormField>
+        </div>
+      </div>
+
+      {/* Bottom Section - Details & Specification (Full Width) */}
+      <div className="space-y-3 sm:space-y-4">
+        <h4 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide border-b border-muted pb-2">Detail & Spesifikasi</h4>
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField id="source" label="Sumber" error={errors.source}>
+            <Input id="source" placeholder="Sumber pengadaan" {...register("source")} />
+          </FormField>
+          <FormField id="quantity" label="Jumlah" error={errors.quantity}>
+            <Input id="quantity" type="number" min={0} placeholder="0" inputMode="numeric" {...register("quantity", { valueAsNumber: true })} />
+          </FormField>
+          <FormField id="acquisitionDate" label="Tanggal Perolehan" error={errors.acquisitionDate}>
+            <Input
+              id="acquisitionDate"
+              type="date"
+              {...register("acquisitionDate")}
+            />
+          </FormField>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <FormField id="specification" label="Spesifikasi" error={errors.specification}>
+              <Textarea id="specification" rows={2} placeholder="Deskripsi spesifikasi aset tetap" {...register("specification")} className="resize-none" />
+            </FormField>
+          </div>
+          <FormField id="roomId" label="Ruang" error={errors.roomId}>
+            <Select id="roomId" disabled={!hasRooms} {...register("roomId")}>
+              <option value="">Pilih Ruangan</option>
+              {rooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField id="condition" label="Kondisi" error={errors.condition}>
+            <Select id="condition" {...register("condition")}>
+              <option value="baik">Baik</option>
+              <option value="cukup">Cukup</option>
+              <option value="rusak">Rusak</option>
+            </Select>
+          </FormField>
+        </div>
+      </div>
+
+      {!hasRooms ? (
+        <p className="text-sm text-destructive">Tambahkan data ruangan terlebih dahulu sebelum mencatat aset tetap.</p>
+      ) : null}
+      <div className="pt-4 border-t border-muted">
+        <Button
+          type="submit"
+          disabled={isSubmitting || !hasRooms}
+          className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 sm:py-2.5 px-6 rounded-lg shadow-sm transition-colors touch-manipulation"
+          size="lg"
+        >
+          {isSubmitting ? "Menyimpan..." : submitLabel ?? "Simpan"}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export default FixedAssetForm;

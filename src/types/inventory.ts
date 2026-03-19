@@ -37,6 +37,8 @@ export interface InventoryItem {
   condition: "baik" | "cukup" | "rusak";
 }
 
+export interface FixedAsset extends InventoryItem {}
+
 export interface Loan {
   id: string;
   loanDate: string;
@@ -89,6 +91,7 @@ export interface OutgoingMail {
 
 export interface InventorySnapshot {
   items: Record<string, InventoryItem>;
+  fixedAssets: Record<string, FixedAsset>;
   rooms: Record<string, Room>;
   lands: Record<string, Land>;
   loans: Record<string, Loan>;
@@ -96,4 +99,4 @@ export interface InventorySnapshot {
   outgoingMail: Record<string, OutgoingMail>;
 }
 
-export type InventoryEntity = InventoryItem | Room | Land | Loan | IncomingMail | OutgoingMail;
+export type InventoryEntity = InventoryItem | FixedAsset | Room | Land | Loan | IncomingMail | OutgoingMail;

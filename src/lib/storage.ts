@@ -144,3 +144,62 @@ export async function uploadInventoryImage(folder: string, file: File): Promise<
   const normalizedBase = baseUrl.replace(/\/$/, "");
   return { key, url: `${normalizedBase}/${key}` };
 }
+
+export async function uploadFixedAssetImage(folder: string, file: File): Promise<UploadResult> {
+  // Same logic as uploadInventoryImage
+  if (!isR2Configured()) {
+    if (import.meta.env.VITE_R2_DEV_INLINE_BASE64 === "true") {
+      const dataUrl = await blobToDataUrl(file);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const safeName = sanitizeFileName(file.name);
+      const key = `${folder}/${timestamp}-${safeName}`;
+      console.warn(
+        "R2 tidak dikonfigurasi. Menggunakan fallback data URL untuk pengembangan."
+      );
+      return { key, url: dataUrl };
+    }
+    throw new Error(
+      "Konfigurasi R2 belum lengkap. Set env VITE_R2_* atau aktifkan fallback dev."
+    );
+  }
+
+  const config = getConfig();
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const safeName = sanitizeFileName(file.name);
+  const key = `${folder}/${timestamp}-${safeName}`;
+
+  const client = ensureClient();
+  const arrayBuffer = await file.arrayBuffer();
+  const bodyBytes = new Uint8Array(arrayBuffer);
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: bodyBytes,
+      ContentType: file.type || "application/octet-stream",
+    })
+  );
+
+  let baseUrl = config.publicBaseUrl;
+  if (!baseUrl) {
+    try {
+      const endpointUrl = new URL(config.endpoint);
+      baseUrl = `https://${config.bucket}.${endpointUrl.host}`;
+    } catch (error) {
+      console.warn("Tidak dapat membentuk URL publik R2 dari endpoint", error);
+      baseUrl = config.endpoint;
+    }
+  }
+
+  if (!baseUrl) {
+    throw new Error("Gagal menentukan URL publik R2.");
+  }
+
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    baseUrl = `https://${baseUrl}`;
+  }
+
+  const normalizedBase = baseUrl.replace(/\/$/, "");
+  return { key, url: `${normalizedBase}/${key}` };
+}

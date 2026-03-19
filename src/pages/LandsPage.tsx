@@ -54,7 +54,7 @@ const LandsPage = () => {
       }
 
       // Prepare the data to save (without the photoFile)
-      const dataToSave = {
+      const dataToSave: any = {
         locationName: values.locationName,
         locationCode: values.locationCode,
         area: values.area,
@@ -63,8 +63,10 @@ const LandsPage = () => {
         certificateNumber: values.certificateNumber,
         origin: values.origin,
         description: values.description,
-        photoUrl,
       };
+      if (photoUrl !== undefined) {
+        dataToSave.photoUrl = photoUrl;
+      }
 
       if (dialogMode === "edit" && selectedLand) {
         await updateLand(selectedLand.id, dataToSave);

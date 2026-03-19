@@ -27,6 +27,19 @@ export const inventoryItemSchema = z.object({
   photoFile: imageFileSchema,
 });
 
+export const fixedAssetSchema = z.object({
+  code: z.string().min(2, "Kode wajib diisi"),
+  name: z.string().min(2, "Nama aset wajib diisi"),
+  brand: z.string().optional().default(""),
+  specification: z.string().optional().default(""),
+  quantity: z.coerce.number().min(0, "Jumlah tidak boleh negatif"),
+  acquisitionDate: z.string().min(1, "Tanggal perolehan wajib diisi"),
+  source: z.string().min(1, "Sumber wajib diisi"),
+  roomId: z.string().min(1, "Ruang wajib dipilih"),
+  condition: z.enum(["baik", "cukup", "rusak"]),
+  photoFile: imageFileSchema,
+});
+
 export const roomSchema = z.object({
   name: z.string().min(2, "Nama ruang wajib diisi"),
   buildingCode: z.string().min(1, "Kode gedung wajib diisi"),
@@ -101,6 +114,7 @@ export const outgoingMailSchema = z.object({
 });
 
 export type InventoryItemFormValues = z.infer<typeof inventoryItemSchema>;
+export type FixedAssetFormValues = z.infer<typeof fixedAssetSchema>;
 export type RoomFormValues = z.infer<typeof roomSchema>;
 export type LandFormValues = z.infer<typeof landSchema>;
 export type LoanFormValues = z.infer<typeof loanSchema>;

@@ -42,15 +42,20 @@ const RoomsPage = () => {
         photoUrl = uploadResult.url;
       }
 
+      const payload: any = { ...rest };
+      if (photoUrl !== undefined) {
+        payload.photoUrl = photoUrl;
+      }
+
       if (dialogMode === "edit" && selectedRoom) {
-        await updateRoom(selectedRoom.id, { ...rest, photoUrl });
+        await updateRoom(selectedRoom.id, payload);
         addToast({
           type: "success",
           title: "Berhasil",
           description: "Ruangan berhasil diperbarui!",
         });
       } else {
-        await createRoom({ ...rest, photoUrl });
+        await createRoom(payload);
         addToast({
           type: "success",
           title: "Berhasil",

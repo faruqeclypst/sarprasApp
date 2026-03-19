@@ -19,6 +19,7 @@ const LandsPage = lazy(() => import("./pages/LandsPage"));
 const LoansPage = lazy(() => import("./pages/LoansPage"));
 const IncomingMailPage = lazy(() => import("./pages/IncomingMailPage"));
 const OutgoingMailPage = lazy(() => import("./pages/OutgoingMailPage"));
+const FixedAssetsPage = lazy(() => import("./pages/FixedAssetsPage"));
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -42,6 +43,7 @@ const App = () => {
               >
                 <Route index element={<DashboardPage />} />
                 <Route path="/inventaris" element={<InventoryPage />} />
+                <Route path="/aset-tetap" element={<FixedAssetsPage />} />
                 <Route path="/ruangan" element={<RoomsPage />} />
                 <Route path="/tanah" element={<LandsPage />} />
                 <Route path="/peminjaman" element={<LoansPage />} />
