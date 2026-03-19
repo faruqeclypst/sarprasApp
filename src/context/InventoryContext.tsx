@@ -84,6 +84,10 @@ export const InventoryProvider = ({ children }: InventoryProviderProps) => {
       setItems(
         Object.entries<InventoryItem>(value.items ?? {}).map(([id, item]) => ({
           ...item,
+          acquisitionDate:
+            (item as any).acquisitionDate ??
+            // fallback for legacy data
+            new Date().toISOString().slice(0, 10),
           id,
         }))
       );

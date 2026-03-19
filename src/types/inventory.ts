@@ -19,7 +19,6 @@ export interface Land {
   address: string;
   certificateNumber: string;
   origin: string;
-  price: number;
   photoUrl?: string;
   description?: string;
 }
@@ -31,7 +30,7 @@ export interface InventoryItem {
   brand: string;
   specification: string;
   quantity: number;
-  totalPrice: number;
+  acquisitionDate: string;
   source: string;
   roomId: string;
   photoUrl?: string;

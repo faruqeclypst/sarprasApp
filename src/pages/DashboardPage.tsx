@@ -22,8 +22,7 @@ const DashboardPage = () => {
 
   // Calculate real statistics from actual data
   const totalItems = items.length;
-  const totalAssetValue = items.reduce((sum, item) => sum + item.totalPrice, 0) +
-                         lands.reduce((sum, land) => sum + land.price, 0);
+  const totalAssetValue = 0;
   const healthyRooms = rooms.filter(room => room.condition === "baik").length;
   const totalRooms = rooms.length;
   const activeLoans = loans.filter(loan => loan.status === "dipinjam").length;

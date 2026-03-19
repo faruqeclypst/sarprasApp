@@ -12,7 +12,8 @@ import type { Room } from "../types/inventory";
 import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
 import { useToast } from "../components/ui/toast";
 import { ExportButton } from "../components/ui/export-button";
-import { exportToCSV, formatCurrencyForExport } from "../lib/export";
+import { ImportButton } from "../components/ui/import-button";
+import { downloadRoomsImportTemplate, exportRoomsToExcel, parseRoomsImportExcel } from "../lib/roomsExcel";
 
 const RoomsPage = () => {
   const { rooms, createRoom, updateRoom, deleteRoom } = useInventory();
@@ -23,6 +24,7 @@ const RoomsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -110,27 +112,36 @@ const RoomsPage = () => {
   };
 
   const handleExportRooms = () => {
-    const headers = [
-      "Nama Ruangan",
-      "Kode Gedung",
-      "Kondisi",
-      "Kapasitas",
-      "Jenis Ruangan",
-      "Lantai",
-      "Catatan"
-    ];
+    exportRoomsToExcel({ rooms, filename: "data-ruangan.xlsx" });
+  };
 
-    const exportData = rooms.map(room => ({
-      "Nama Ruangan": room.name,
-      "Kode Gedung": room.buildingCode,
-      "Kondisi": room.condition,
-      "Kapasitas": room.capacity,
-      "Jenis Ruangan": room.roomType,
-      "Lantai": room.floor,
-      "Catatan": room.notes || ""
-    }));
+  const handleDownloadTemplate = () => {
+    downloadRoomsImportTemplate();
+  };
 
-    exportToCSV(exportData, "data-ruangan.csv", headers);
+  const handleImportRooms = async (file: File) => {
+    setIsImporting(true);
+    try {
+      const parsed = await parseRoomsImportExcel(file);
+      if (parsed.length === 0) {
+        addToast({ type: "error", title: "Gagal", description: "File kosong atau tidak ada baris data." });
+        return;
+      }
+      for (const row of parsed) {
+        await createRoom({
+          name: row.name,
+          buildingCode: row.buildingCode,
+          condition: row.condition,
+          notes: row.notes ?? "",
+          capacity: row.capacity,
+          roomType: row.roomType ? (row.roomType as any) : undefined,
+          floor: row.floor,
+        });
+      }
+      addToast({ type: "success", title: "Berhasil", description: `${parsed.length} baris diproses.` });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const defaultValues = selectedRoom
@@ -185,7 +196,11 @@ const RoomsPage = () => {
               />
             </DialogContent>
           </Dialog>
+          <ImportButton onImport={handleImportRooms} isLoading={isImporting} />
           <ExportButton onExport={handleExportRooms} />
+          <Button onClick={handleDownloadTemplate} variant="outline">
+            Download Template
+          </Button>
         </div>
       </div>
       <RoomsTable rooms={rooms} onEdit={handleEditRoom} onDelete={handleDeleteRoom} />

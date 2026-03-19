@@ -12,7 +12,8 @@ import type { LandFormValues } from "../components/forms/schemas";
 import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
 import { useToast } from "../components/ui/toast";
 import { ExportButton } from "../components/ui/export-button";
-import { exportToCSV, formatCurrencyForExport, formatDateForExport } from "../lib/export";
+import { ImportButton } from "../components/ui/import-button";
+import { downloadLandsImportTemplate, exportLandsToExcel, parseLandsImportExcel } from "../lib/landsExcel";
 
 const LandsPage = () => {
   const { lands, createLand, updateLand, deleteLand } = useInventory();
@@ -23,6 +24,7 @@ const LandsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [landToDelete, setLandToDelete] = useState<Land | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -60,7 +62,6 @@ const LandsPage = () => {
         address: values.address,
         certificateNumber: values.certificateNumber,
         origin: values.origin,
-        price: values.price,
         description: values.description,
         photoUrl,
       };
@@ -128,31 +129,28 @@ const LandsPage = () => {
   };
 
   const handleExportLands = () => {
-    const headers = [
-      "Nama Lokasi",
-      "Kode Lokasi",
-      "Luas Area",
-      "Tahun Perolehan",
-      "Alamat",
-      "Nomor Sertifikat",
-      "Asal",
-      "Harga",
-      "Keterangan"
-    ];
+    exportLandsToExcel({ lands, filename: "data-tanah.xlsx" });
+  };
 
-    const exportData = lands.map(land => ({
-      "Nama Lokasi": land.locationName,
-      "Kode Lokasi": land.locationCode,
-      "Luas Area": `${land.area} m²`,
-      "Tahun Perolehan": land.acquisitionYear,
-      "Alamat": land.address,
-      "Nomor Sertifikat": land.certificateNumber,
-      "Asal": land.origin,
-      "Harga": formatCurrencyForExport(land.price),
-      "Keterangan": land.description || ""
-    }));
+  const handleDownloadTemplate = () => {
+    downloadLandsImportTemplate();
+  };
 
-    exportToCSV(exportData, "data-tanah.csv", headers);
+  const handleImportLands = async (file: File) => {
+    setIsImporting(true);
+    try {
+      const parsed = await parseLandsImportExcel(file);
+      if (parsed.length === 0) {
+        addToast({ type: "error", title: "Gagal", description: "File kosong atau tidak ada baris data." });
+        return;
+      }
+      for (const row of parsed) {
+        await createLand(row);
+      }
+      addToast({ type: "success", title: "Berhasil", description: `${parsed.length} baris diproses.` });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const defaultValues = selectedLand
@@ -164,7 +162,6 @@ const LandsPage = () => {
         address: selectedLand.address,
         certificateNumber: selectedLand.certificateNumber,
         origin: selectedLand.origin,
-        price: selectedLand.price,
         description: selectedLand.description ?? "",
         photoFile: undefined,
       }
@@ -210,7 +207,11 @@ const LandsPage = () => {
               />
             </DialogContent>
           </Dialog>
+          <ImportButton onImport={handleImportLands} isLoading={isImporting} />
           <ExportButton onExport={handleExportLands} />
+          <Button onClick={handleDownloadTemplate} variant="outline">
+            Download Template
+          </Button>
         </div>
       </div>
       <LandsTable lands={lands} onEdit={handleEditLand} onDelete={handleDeleteLand} />

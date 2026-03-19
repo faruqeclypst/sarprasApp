@@ -33,7 +33,6 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
       address: "",
       certificateNumber: "",
       origin: "",
-      price: 0,
       description: "",
       photoFile: undefined,
       ...defaultValues,
@@ -58,7 +57,6 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
           address: "",
           certificateNumber: "",
           origin: "",
-          price: 0,
           description: "",
           photoFile: undefined,
         });
@@ -99,16 +97,6 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
           </FormField>
           <FormField id="origin" label="Asal" error={errors.origin}>
             <Input id="origin" {...register("origin")} />
-          </FormField>
-        </div>
-      </div>
-
-      {/* Value & Pricing Section */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Nilai & Harga</h4>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FormField id="price" label="Harga" error={errors.price}>
-            <Input id="price" type="number" min={0} step={1000} {...register("price", { valueAsNumber: true })} />
           </FormField>
         </div>
       </div>

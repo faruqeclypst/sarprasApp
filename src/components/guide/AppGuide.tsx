@@ -116,7 +116,7 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
                   <li>Kode barang (wajib unik)</li>
                   <li>Nama dan spesifikasi</li>
                   <li>Merk dan jumlah</li>
-                  <li>Harga total dan sumber dana</li>
+                  <li>Tanggal perolehan dan sumber perolehan</li>
                   <li>Ruangan penempatan</li>
                   <li>Kondisi barang</li>
                   <li>Upload foto (opsional)</li>
@@ -222,7 +222,7 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
                   <li>Alamat lengkap</li>
                   <li>Nomor sertifikat</li>
                   <li>Asal perolehan</li>
-                  <li>Harga pembelian</li>
+                  <li>Dokumentasi & keterangan aset</li>
                   <li>Keterangan tambahan</li>
                   <li>Upload foto sertifikat/tanah</li>
                 </ul>

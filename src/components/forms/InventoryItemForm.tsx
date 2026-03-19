@@ -34,7 +34,7 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel, existi
       brand: "",
       specification: "",
       quantity: 0,
-      totalPrice: 0,
+      acquisitionDate: new Date().toISOString().slice(0, 10),
       source: "",
       roomId: rooms[0]?.id ?? "",
       condition: "baik",
@@ -116,15 +116,11 @@ const InventoryItemForm = ({ defaultValues, rooms, onSubmit, submitLabel, existi
           <FormField id="quantity" label="Jumlah" error={errors.quantity}>
             <Input id="quantity" type="number" min={0} placeholder="0" inputMode="numeric" {...register("quantity", { valueAsNumber: true })} />
           </FormField>
-          <FormField id="totalPrice" label="Harga Total" error={errors.totalPrice}>
+          <FormField id="acquisitionDate" label="Tanggal Perolehan" error={errors.acquisitionDate}>
             <Input
-              id="totalPrice"
-              type="number"
-              min={0}
-              step={1000}
-              placeholder="0"
-              inputMode="numeric"
-              {...register("totalPrice", { valueAsNumber: true })}
+              id="acquisitionDate"
+              type="date"
+              {...register("acquisitionDate")}
             />
           </FormField>
           <div className="sm:col-span-2 lg:col-span-3">

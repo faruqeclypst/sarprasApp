@@ -12,7 +12,9 @@ import type { InventoryItem } from "../types/inventory";
 import { DeleteConfirmationDialog } from "../components/ui/delete-confirmation-dialog";
 import { useToast } from "../components/ui/toast";
 import { ExportButton } from "../components/ui/export-button";
-import { exportToCSV, formatCurrencyForExport } from "../lib/export";
+import { ImportButton } from "../components/ui/import-button";
+import { downloadInventoryImportTemplate, parseInventoryImportExcel } from "../lib/inventoryExcel";
+import { exportInventoryToExcel } from "../lib/inventoryExcelExport";
 
 const InventoryPage = () => {
   const { items, rooms, allRooms, createItem, updateItem, deleteItem } = useInventory();
@@ -23,6 +25,7 @@ const InventoryPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -101,31 +104,67 @@ const InventoryPage = () => {
   };
 
   const handleExportInventory = () => {
-    const headers = [
-      "Kode Barang",
-      "Nama Barang",
-      "Merek",
-      "Spesifikasi",
-      "Jumlah",
-      "Harga Total",
-      "Sumber",
-      "Ruangan",
-      "Kondisi"
-    ];
+    exportInventoryToExcel({
+      items,
+      rooms,
+      filename: "data-inventaris.xlsx",
+    });
+  };
 
-    const exportData = items.map(item => ({
-      "Kode Barang": item.code,
-      "Nama Barang": item.name,
-      "Merek": item.brand,
-      "Spesifikasi": item.specification,
-      "Jumlah": item.quantity,
-      "Harga Total": formatCurrencyForExport(item.totalPrice),
-      "Sumber": item.source,
-      "Ruangan": rooms.find(room => room.id === item.roomId)?.name || "",
-      "Kondisi": item.condition
-    }));
+  const handleDownloadTemplate = () => {
+    downloadInventoryImportTemplate({
+      roomNames: allRooms.map((r) => r.name),
+    });
+  };
 
-    exportToCSV(exportData, "data-inventaris.csv", headers);
+  const handleImportInventory = async (file: File) => {
+    setIsImporting(true);
+    try {
+      const parsed = await parseInventoryImportExcel(file);
+      if (parsed.length === 0) {
+        addToast({
+          type: "error",
+          title: "Gagal",
+          description: "File kosong atau tidak ada baris data.",
+        });
+        return;
+      }
+
+      const roomLookup = new Map(allRooms.map((r) => [r.name.trim().toLowerCase(), r.id]));
+      const errors: string[] = [];
+
+      for (let i = 0; i < parsed.length; i++) {
+        const row = parsed[i];
+        const roomId = roomLookup.get(row.roomName.trim().toLowerCase());
+        if (!roomId) {
+          errors.push(`Baris ${i + 2}: Ruangan "${row.roomName}" tidak ditemukan. Pastikan nama ruangan sama persis.`);
+          continue;
+        }
+        await createItem({
+          code: row.code,
+          name: row.name,
+          brand: row.brand,
+          specification: row.specification,
+          quantity: row.quantity,
+          acquisitionDate: row.acquisitionDate,
+          source: row.source,
+          roomId,
+          condition: row.condition,
+        });
+      }
+
+      if (errors.length > 0) {
+        throw new Error(errors.slice(0, 20).join("\n"));
+      }
+
+      addToast({
+        type: "success",
+        title: "Berhasil",
+        description: `${parsed.length} baris diproses.`,
+      });
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   const defaultValues = selectedItem
@@ -135,7 +174,7 @@ const InventoryPage = () => {
         brand: selectedItem.brand,
         specification: selectedItem.specification,
         quantity: selectedItem.quantity,
-        totalPrice: selectedItem.totalPrice,
+        acquisitionDate: selectedItem.acquisitionDate,
         source: selectedItem.source,
         roomId: selectedItem.roomId,
         condition: selectedItem.condition,
@@ -185,7 +224,11 @@ const InventoryPage = () => {
               />
             </DialogContent>
           </Dialog>
+          <ImportButton onImport={handleImportInventory} isLoading={isImporting} className="w-full sm:w-auto" />
           <ExportButton onExport={handleExportInventory} className="w-full sm:w-auto" />
+          <Button onClick={handleDownloadTemplate} variant="outline" className="w-full sm:w-auto">
+            Download Template
+          </Button>
         </div>
       </div>
       <InventoryTable items={items} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />

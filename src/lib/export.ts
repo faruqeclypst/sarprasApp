@@ -9,7 +9,8 @@ export const exportToCSV = (data: any[], filename: string, headers: string[]) =>
     headers.join(","),
     ...data.map(row =>
       headers.map(header => {
-        const value = row[header] || "";
+        const rawValue = row[header];
+        const value = rawValue === null || rawValue === undefined ? "" : String(rawValue);
         // Escape quotes and wrap in quotes if contains comma, quote, or newline
         if (value.includes(",") || value.includes('"') || value.includes("\n")) {
           return `"${value.replace(/"/g, '""')}"`;

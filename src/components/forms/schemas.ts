@@ -20,7 +20,7 @@ export const inventoryItemSchema = z.object({
   brand: z.string().optional().default(""),
   specification: z.string().optional().default(""),
   quantity: z.coerce.number().min(0, "Jumlah tidak boleh negatif"),
-  totalPrice: z.coerce.number().min(0, "Harga total tidak boleh negatif"),
+  acquisitionDate: z.string().min(1, "Tanggal perolehan wajib diisi"),
   source: z.string().min(1, "Sumber wajib diisi"),
   roomId: z.string().min(1, "Ruang wajib dipilih"),
   condition: z.enum(["baik", "cukup", "rusak"]),
@@ -49,7 +49,6 @@ export const landSchema = z.object({
   address: z.string().min(3, "Alamat wajib diisi"),
   certificateNumber: z.string().min(1, "Nomor sertifikat wajib diisi"),
   origin: z.string().min(1, "Asal wajib diisi"),
-  price: z.coerce.number().min(0, "Harga wajib diisi"),
   description: z.string().optional().or(z.literal("")),
   photoFile: imageFileSchema,
 });

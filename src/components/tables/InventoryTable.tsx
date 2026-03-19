@@ -93,10 +93,10 @@ const InventoryTable = ({ items, rooms, onEdit, onDelete }: InventoryTableProps)
       sortable: true,
     },
     {
-      key: "totalPrice",
-      label: "Harga Total",
+      key: "acquisitionDate",
+      label: "Tanggal Perolehan",
       sortable: true,
-      render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
+      render: (value: string) => value ? new Date(value).toLocaleDateString("id-ID") : "-",
     },
   ];
 
@@ -149,16 +149,16 @@ const InventoryTable = ({ items, rooms, onEdit, onDelete }: InventoryTableProps)
                 </div>
               </div>
 
-              {/* Financial & Location Information Section */}
+              {/* Acquisition & Location Information Section */}
               <div className="bg-muted/20 rounded-lg p-4 space-y-4">
                 <h3 className="font-semibold text-base flex items-center gap-2">
                   <div className="w-1 h-5 bg-blue-500 rounded-full"></div>
-                  Informasi Keuangan & Lokasi
+                  Informasi Perolehan & Lokasi
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Harga Total</label>
-                    <p className="font-bold text-lg text-green-600 dark:text-green-400">Rp {item.totalPrice.toLocaleString("id-ID")}</p>
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tanggal Perolehan</label>
+                    <p className="font-medium">{item.acquisitionDate ? new Date(item.acquisitionDate).toLocaleDateString("id-ID") : "-"}</p>
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Sumber Perolehan</label>
@@ -187,10 +187,6 @@ const InventoryTable = ({ items, rooms, onEdit, onDelete }: InventoryTableProps)
                   Informasi Tambahan
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Harga per Unit</label>
-                    <p className="font-medium">Rp {Math.round(item.totalPrice / item.quantity).toLocaleString("id-ID")}</p>
-                  </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status Inventaris</label>
                     <div className="flex items-center gap-2">

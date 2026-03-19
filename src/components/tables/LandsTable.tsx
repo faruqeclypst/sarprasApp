@@ -61,12 +61,6 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
       sortable: true,
       render: (value: number) => `${value.toLocaleString("id-ID")} m²`,
     },
-    {
-      key: "price",
-      label: "Harga",
-      sortable: true,
-      render: (value: number) => `Rp ${value.toLocaleString("id-ID")}`,
-    },
   ];
 
   const renderActions = (land: Land) => (
@@ -118,11 +112,11 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
                 </div>
               </div>
 
-              {/* Legal & Financial Information Section */}
+              {/* Legal Information Section */}
               <div className="bg-muted/20 rounded-lg p-4 space-y-4">
                 <h3 className="font-semibold text-base flex items-center gap-2">
                   <div className="w-1 h-5 bg-green-500 rounded-full"></div>
-                  Informasi Legal & Keuangan
+                  Informasi Legal
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -132,14 +126,6 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Asal Perolehan</label>
                     <p className="font-medium">{land.origin}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nilai Tanah</label>
-                    <p className="font-bold text-lg text-green-600 dark:text-green-400">Rp {land.price.toLocaleString("id-ID")}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Harga per m²</label>
-                    <p className="font-medium">Rp {Math.round(land.price / land.area).toLocaleString("id-ID")}/m²</p>
                   </div>
                 </div>
               </div>
@@ -170,10 +156,6 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
                   <div className="text-center p-3 bg-card rounded-lg border">
                     <p className="text-2xl font-bold text-primary">{land.area.toLocaleString("id-ID")}</p>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">Meter Persegi</p>
-                  </div>
-                  <div className="text-center p-3 bg-card rounded-lg border">
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{Math.round(land.price / 1000000)}</p>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Juta Rupiah</p>
                   </div>
                   <div className="text-center p-3 bg-card rounded-lg border">
                     <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{new Date().getFullYear() - land.acquisitionYear}</p>
