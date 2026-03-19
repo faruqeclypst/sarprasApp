@@ -274,7 +274,7 @@ const LoginPage = () => {
             </motion.form>
 
             {/* Register Link */}
-            <motion.div
+            {/* <motion.div
               className="text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -289,7 +289,7 @@ const LoginPage = () => {
                   Daftar di sini
                 </Link>
               </p>
-            </motion.div>
+            </motion.div> */}
           </CardContent>
         </Card>
       </motion.div>
