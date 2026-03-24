@@ -33,7 +33,7 @@ const navigation = [
   { to: "/inventaris", label: "Barang", icon: ClipboardList, badge: null },
   { to: "/aset-tetap", label: "Aset Tetap", icon: Box, badge: null },
   { to: "/ruangan", label: "Ruang", icon: Building2, badge: null },
-  { to: "/tanah", label: "Tanah", icon: MapPin, badge: null },
+  { to: "/tanah", label: "Tanah & Bangunan", icon: MapPin, badge: null },
   // { to: "/peminjaman", label: "Peminjaman", icon: Layers, badge: "New" },
   { to: "/peminjaman", label: "Peminjaman", icon: Layers, badge: null },
   { to: "/surat-masuk", label: "Surat Masuk", icon: Mail, badge: null },

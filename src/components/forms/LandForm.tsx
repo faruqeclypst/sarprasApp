@@ -124,7 +124,7 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
           <div className="sm:col-span-2 lg:col-span-3">
             <FormField
               id="photoFile"
-              label="Foto Tanah"
+              label="Foto"
               error={errors.photoFile}
               description="Format JPG, PNG, atau WEBP"
             >
@@ -138,7 +138,7 @@ const LandForm = ({ defaultValues, onSubmit, submitLabel, existingPhotoUrl }: La
                     onChange={field.onChange}
                     existingUrl={existingPhotoUrl}
                     accept="image/*"
-                    placeholder="Seret & lepas foto tanah di sini atau klik untuk memilih"
+                    placeholder="Seret & lepas foto di sini atau klik untuk memilih"
                   />
                 )}
               />

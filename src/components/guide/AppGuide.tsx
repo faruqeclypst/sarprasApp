@@ -67,7 +67,7 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                    <span>Pencatatan data tanah dan aset tetap</span>
+                    <span>Pencatatan data tanah & bangunan dan aset tetap</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
@@ -204,18 +204,18 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
     },
     {
       id: "lands",
-      title: "Manajemen Tanah",
+      title: "Manajemen Tanah & Bangunan",
       icon: <FileText className="h-5 w-5" />,
       content: (
         <div className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Menambah Data Tanah</h4>
+            <h4 className="font-semibold mb-2">Menambah Data</h4>
             <ol className="space-y-2 text-sm list-decimal list-inside">
-              <li>Klik menu "Tanah" di sidebar</li>
-              <li>Klik tombol "Tambah Tanah" (+)</li>
-              <li>Isi form data tanah:
+              <li>Klik menu "Tanah & Bangunan" di sidebar</li>
+              <li>Klik tombol "Tambah Data" (+)</li>
+              <li>Isi form data:
                 <ul className="ml-4 mt-1 space-y-1 list-disc">
-                  <li>Nama lokasi tanah</li>
+                  <li>Nama lokasi</li>
                   <li>Kode lokasi unik</li>
                   <li>Luas dalam meter persegi</li>
                   <li>Tahun perolehan</li>
@@ -224,7 +224,7 @@ const AppGuide: React.FC<AppGuideProps> = ({ isOpen, onClose }) => {
                   <li>Asal perolehan</li>
                   <li>Dokumentasi & keterangan aset</li>
                   <li>Keterangan tambahan</li>
-                  <li>Upload foto sertifikat/tanah</li>
+                  <li>Upload foto</li>
                 </ul>
               </li>
               <li>Klik "Simpan" untuk menyimpan</li>

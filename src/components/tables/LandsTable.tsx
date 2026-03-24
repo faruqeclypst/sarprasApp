@@ -28,14 +28,14 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
             <DialogTrigger asChild>
               <img
                 src={value}
-                alt="Foto tanah"
+                alt="Foto"
                 className="h-10 w-10 cursor-pointer rounded object-cover ring-1 ring-border"
               />
             </DialogTrigger>
             <DialogContent className="max-w-3xl p-2 sm:p-4">
               <img
                 src={value}
-                alt="Foto tanah"
+                alt="Foto"
                 className="mx-auto max-h-[90vh] sm:max-h-[80vh] md:max-h-[75vh] lg:max-h-[70vh] xl:max-h-[65vh] w-auto max-w-full rounded object-contain"
               />
             </DialogContent>
@@ -73,8 +73,8 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
         </DialogTrigger>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-6">
-            <DialogTitle className="text-xl font-bold">Detail Tanah</DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">Informasi lengkap aset tanah</p>
+            <DialogTitle className="text-xl font-bold">Detail Tanah & Bangunan</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">Informasi lengkap aset</p>
           </DialogHeader>
           
           <div className="grid gap-8 lg:grid-cols-3">
@@ -170,7 +170,7 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
               <div className="bg-muted/20 rounded-lg p-4 h-fit sticky top-4">
                 <h3 className="font-semibold text-base flex items-center gap-2 mb-4">
                   <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
-                  Foto Tanah
+                  Foto
                 </h3>
                 <div className="flex items-center justify-center">
                   {land.photoUrl ? (
@@ -191,7 +191,7 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       <span className="text-sm font-medium">Tidak ada foto</span>
-                      <span className="text-xs">Foto tanah tidak tersedia</span>
+                      <span className="text-xs">Foto tidak tersedia</span>
                     </div>
                   )}
                 </div>
@@ -217,16 +217,16 @@ const LandsTable = ({ lands, onEdit, onDelete }: LandsTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Data Tanah</CardTitle>
+        <CardTitle className="text-base font-semibold">Data Tanah & Bangunan</CardTitle>
       </CardHeader>
       <CardContent>
         <DataTable
           data={lands}
           columns={columns}
-          searchPlaceholder="Cari tanah..."
+          searchPlaceholder="Cari..."
           actions={renderActions}
           exportable={true}
-          emptyMessage="Belum ada data tanah."
+          emptyMessage="Belum ada data."
         />
       </CardContent>
     </Card>

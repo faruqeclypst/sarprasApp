@@ -79,7 +79,7 @@ const LandsPage = () => {
       addToast({
         type: "error",
         title: "Gagal",
-        description: "Gagal menyimpan data tanah. Silakan coba lagi.",
+        description: "Gagal menyimpan data tanah & bangunan. Silakan coba lagi.",
       });
     }
   };
@@ -109,14 +109,14 @@ const LandsPage = () => {
       addToast({
         type: "success",
         title: "Berhasil",
-        description: `Data tanah "${landToDelete.locationName}" telah dihapus.`,
+        description: `Data tanah & bangunan "${landToDelete.locationName}" telah dihapus.`,
       });
     } catch (error) {
       console.error("Gagal menghapus tanah", error);
       addToast({
         type: "error",
         title: "Gagal",
-        description: "Gagal menghapus tanah. Silakan coba lagi.",
+        description: "Gagal menghapus tanah & bangunan. Silakan coba lagi.",
       });
     } finally {
       setIsDeleting(false);
@@ -173,8 +173,8 @@ const LandsPage = () => {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Data Tanah</h2>
-          <p className="text-sm text-muted-foreground">Catat aset tanah sekolah dengan detail kepemilikan.</p>
+          <h2 className="text-2xl font-semibold text-foreground">Data Tanah & Bangunan</h2>
+          <p className="text-sm text-muted-foreground">Catat aset tanah & bangunan sekolah dengan detail kepemilikan.</p>
         </div>
         <div className="flex gap-3">
           <Dialog
@@ -194,17 +194,17 @@ const LandsPage = () => {
                 }}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Tambah Tanah
+                Tambah Data
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{dialogMode === "edit" ? "Edit Data Tanah" : "Tambah Data Tanah"}</DialogTitle>
+                <DialogTitle>{dialogMode === "edit" ? "Edit Data Tanah & Bangunan" : "Tambah Data Tanah & Bangunan"}</DialogTitle>
               </DialogHeader>
               <LandForm
                 defaultValues={defaultValues}
                 onSubmit={handleSubmit}
-                submitLabel={dialogMode === "edit" ? "Perbarui Tanah" : "Simpan Tanah"}
+                submitLabel={dialogMode === "edit" ? "Perbarui Data" : "Simpan Data"}
                 existingPhotoUrl={selectedLand?.photoUrl}
               />
             </DialogContent>
@@ -222,8 +222,8 @@ const LandsPage = () => {
         isOpen={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
         onConfirm={handleConfirmDelete}
-        title="Hapus Tanah"
-        description="Apakah Anda yakin ingin menghapus data tanah '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
+        title="Hapus Tanah & Bangunan"
+        description="Apakah Anda yakin ingin menghapus data tanah & bangunan '{itemName}'? Data yang dihapus tidak dapat dikembalikan."
         itemName={landToDelete?.locationName || ""}
         isLoading={isDeleting}
       />

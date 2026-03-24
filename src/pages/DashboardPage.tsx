@@ -123,7 +123,7 @@ const DashboardPage = () => {
                 </div>
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <p className="text-lg sm:text-2xl font-bold">{lands.length}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Tanah</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Tanah & Bangunan</p>
                 </div>
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg sm:block hidden">
                   <p className="text-lg sm:text-2xl font-bold">{totalIncomingMail}</p>
