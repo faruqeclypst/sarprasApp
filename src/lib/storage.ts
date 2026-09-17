@@ -1,4 +1,5 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { compressImage } from "./imageCompression";
 
 export interface UploadResult {
   key: string;
@@ -83,7 +84,8 @@ const blobToDataUrl = (blob: Blob): Promise<string> =>
     reader.readAsDataURL(blob);
   });
 
-export async function uploadInventoryImage(folder: string, file: File): Promise<UploadResult> {
+export async function uploadInventoryImage(folder: string, rawFile: File): Promise<UploadResult> {
+  const file = await compressImage(rawFile);
   // Dev fallback: allow inlining image as data URL when R2 is not configured
   if (!isR2Configured()) {
     if (import.meta.env.VITE_R2_DEV_INLINE_BASE64 === "true") {
@@ -145,7 +147,8 @@ export async function uploadInventoryImage(folder: string, file: File): Promise<
   return { key, url: `${normalizedBase}/${key}` };
 }
 
-export async function uploadFixedAssetImage(folder: string, file: File): Promise<UploadResult> {
+export async function uploadFixedAssetImage(folder: string, rawFile: File): Promise<UploadResult> {
+  const file = await compressImage(rawFile);
   // Same logic as uploadInventoryImage
   if (!isR2Configured()) {
     if (import.meta.env.VITE_R2_DEV_INLINE_BASE64 === "true") {

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, QrCode } from "lucide-react";
 
 import InventoryItemForm from "../components/forms/InventoryItemForm";
 import type { InventoryItemFormValues } from "../components/forms/schemas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
 import InventoryTable from "../components/tables/InventoryTable";
+import { BatchQrCodeDialog } from "../components/inventory/BatchQrCodeDialog";
 import { useInventory } from "../context/InventoryContext";
 import { uploadInventoryImage } from "../lib/storage";
 import type { InventoryItem } from "../types/inventory";
@@ -26,6 +27,7 @@ const InventoryPage = () => {
   const [itemToDelete, setItemToDelete] = useState<InventoryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -231,12 +233,27 @@ const InventoryPage = () => {
           </Dialog>
           <ImportButton onImport={handleImportInventory} isLoading={isImporting} className="w-full sm:w-auto" />
           <ExportButton onExport={handleExportInventory} className="w-full sm:w-auto" />
+          <Button
+            onClick={() => setIsQrDialogOpen(true)}
+            variant="outline"
+            className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950 font-medium"
+          >
+            <QrCode className="mr-2 h-4 w-4" />
+            QR Code Semua Barang
+          </Button>
           <Button onClick={handleDownloadTemplate} variant="outline" className="w-full sm:w-auto">
             Download Template
           </Button>
         </div>
       </div>
       <InventoryTable items={items} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />
+
+      <BatchQrCodeDialog
+        isOpen={isQrDialogOpen}
+        onClose={() => setIsQrDialogOpen(false)}
+        items={items}
+        rooms={rooms}
+      />
 
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}

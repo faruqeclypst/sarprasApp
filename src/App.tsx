@@ -20,6 +20,7 @@ const LoansPage = lazy(() => import("./pages/LoansPage"));
 const IncomingMailPage = lazy(() => import("./pages/IncomingMailPage"));
 const OutgoingMailPage = lazy(() => import("./pages/OutgoingMailPage"));
 const FixedAssetsPage = lazy(() => import("./pages/FixedAssetsPage"));
+const PublicInventoryDetailPage = lazy(() => import("./pages/PublicInventoryDetailPage"));
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -34,6 +35,12 @@ const App = () => {
         <SidebarProvider>
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
+              {/* Public routes - accessible without login */}
+              <Route path="/publik/inventaris/:id" element={<PublicInventoryDetailPage />} />
+              <Route path="/p/inventaris/:id" element={<PublicInventoryDetailPage />} />
+              <Route path="/p/:id" element={<PublicInventoryDetailPage />} />
+              <Route path="/barang/:id" element={<PublicInventoryDetailPage />} />
+
               <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
               <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
               <Route path="/change-password" element={user ? <ChangePasswordPage /> : <Navigate to="/login" replace />} />
