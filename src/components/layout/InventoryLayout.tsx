@@ -16,7 +16,7 @@ const InventoryLayout = ({ children }: InventoryLayoutProps) => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-foreground relative">
+    <div className="flex h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-foreground relative overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden transition-all duration-300 ease-in-out">
         <TopNavigation />

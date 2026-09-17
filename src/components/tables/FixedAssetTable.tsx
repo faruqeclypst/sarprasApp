@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { DataTable } from "../ui/data-table";
+import { ItemPublicLinkSection } from "../inventory/ItemPublicLinkSection";
 import type { FixedAsset, Room } from "../../types/inventory";
 
 interface FixedAssetTableProps {
@@ -204,9 +205,9 @@ const FixedAssetTable = ({ items, rooms, onEdit, onDelete }: FixedAssetTableProp
               </div>
             </div>
 
-            {/* Right column - Photo */}
-            <div className="lg:col-span-1">
-              <div className="bg-muted/20 rounded-lg p-4 h-fit sticky top-4">
+            {/* Right column - Photo & Public Link */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="bg-muted/20 rounded-lg p-4 h-fit">
                 <h3 className="font-semibold text-base flex items-center gap-2 mb-4">
                   <div className="w-1 h-5 bg-orange-500 rounded-full"></div>
                   Foto Aset Tetap
@@ -234,6 +235,9 @@ const FixedAssetTable = ({ items, rooms, onEdit, onDelete }: FixedAssetTableProp
                   )}
                 </div>
               </div>
+
+              {/* Public Link & QR Code Section */}
+              <ItemPublicLinkSection item={item} type="aset-tetap" />
             </div>
           </div>
         </DialogContent>

@@ -26,6 +26,8 @@ interface BatchQrCodeDialogProps {
   onClose: () => void;
   items: InventoryItem[];
   rooms: Room[];
+  type?: "inventaris" | "aset-tetap";
+  title?: string;
 }
 
 export const BatchQrCodeDialog = ({
@@ -33,6 +35,8 @@ export const BatchQrCodeDialog = ({
   onClose,
   items,
   rooms,
+  type = "inventaris",
+  title,
 }: BatchQrCodeDialogProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRoom, setSelectedRoom] = useState<string>("all");
@@ -74,7 +78,7 @@ export const BatchQrCodeDialog = ({
       for (const item of itemsToGenerate) {
         if (!isMounted) break;
         try {
-          const publicUrl = getItemPublicUrl(item.code || item.id);
+          const publicUrl = getItemPublicUrl(item.code || item.id, type);
           const dataUrl = await generateQrCodeDataUrl(publicUrl, {
             width: labelSize === "compact" ? 180 : 250,
             margin: 1,
@@ -96,14 +100,14 @@ export const BatchQrCodeDialog = ({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, items, labelSize]);
+  }, [isOpen, items, labelSize, type]);
 
   const handlePrint = () => {
     window.print();
   };
 
   const handleCopyLink = async (item: InventoryItem) => {
-    const url = getItemPublicUrl(item.code || item.id);
+    const url = getItemPublicUrl(item.code || item.id, type);
     try {
       await navigator.clipboard.writeText(url);
       setCopiedId(item.id);
@@ -131,6 +135,11 @@ export const BatchQrCodeDialog = ({
     }
   };
 
+  const isFixedAsset = type === "aset-tetap";
+  const defaultTitle = isFixedAsset
+    ? "Generate QR Code Semua Aset Tetap"
+    : "Generate QR Code Semua Barang";
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col p-0 gap-0 overflow-hidden print:m-0 print:p-0 print:border-none print:shadow-none print:max-w-none print:w-full">
@@ -142,14 +151,16 @@ export const BatchQrCodeDialog = ({
                 <QrCode className="w-5 h-5" />
               </div>
               <DialogTitle className="text-xl font-bold">
-                Generate QR Code Semua Barang
+                {title || defaultTitle}
               </DialogTitle>
               <Badge variant="secondary" className="font-semibold text-xs ml-2">
                 {filteredItems.length} dari {items.length} Item
               </Badge>
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Label QR Code siap cetak (stiker aset) yang langsung terhubung ke halaman detail publik masing-masing barang.
+              {isFixedAsset
+                ? "Label QR Code siap cetak (stiker aset) yang langsung terhubung ke halaman detail publik masing-masing aset tetap."
+                : "Label QR Code siap cetak (stiker aset) yang langsung terhubung ke halaman detail publik masing-masing barang."}
             </p>
           </div>
 
@@ -249,7 +260,7 @@ export const BatchQrCodeDialog = ({
           {/* Printable Header only shown when printing */}
           <div className="hidden print:block mb-4 text-center border-b pb-2">
             <h1 className="text-lg font-bold text-black uppercase tracking-wider">
-              Daftar Label QR Code Barang Inventaris
+              {isFixedAsset ? "Daftar Label QR Code Aset Tetap" : "Daftar Label QR Code Barang Inventaris"}
             </h1>
             <p className="text-xs text-gray-600">
               Total: {filteredItems.length} Barang — Dicetak pada {new Date().toLocaleDateString("id-ID")}
@@ -274,7 +285,7 @@ export const BatchQrCodeDialog = ({
             >
               {filteredItems.map((item) => {
                 const qrUrl = qrCodeMap[item.id];
-                const publicUrl = getItemPublicUrl(item.code || item.id);
+                const publicUrl = getItemPublicUrl(item.code || item.id, type);
                 const isCopied = copiedId === item.id;
                 const room = roomLookup.get(item.roomId) || "Tidak diketahui";
 
@@ -286,7 +297,7 @@ export const BatchQrCodeDialog = ({
                     {/* Header Label inside card */}
                     <div className="w-full pb-1.5 border-b border-border/60 flex items-center justify-between text-[9px] font-bold text-muted-foreground tracking-wider uppercase">
                       <span className="text-blue-600 dark:text-blue-400 font-extrabold truncate">
-                        SARPRAS
+                        {isFixedAsset ? "ASET TETAP" : "SARPRAS"}
                       </span>
                       <span className="font-mono text-foreground font-semibold px-1 rounded bg-muted/60">
                         {item.code}

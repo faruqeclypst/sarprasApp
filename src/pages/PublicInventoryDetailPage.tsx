@@ -33,7 +33,11 @@ const conditionLabels: Record<InventoryItem["condition"], string> = {
   rusak: "Rusak",
 };
 
-const PublicInventoryDetailPage = () => {
+interface PublicInventoryDetailPageProps {
+  itemType?: "inventaris" | "aset-tetap";
+}
+
+const PublicInventoryDetailPage = ({ itemType }: PublicInventoryDetailPageProps) => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
 
@@ -43,13 +47,14 @@ const PublicInventoryDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const [isFixedAsset, setIsFixedAsset] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchItemData = async () => {
       if (!id) {
-        setError("Kode atau ID barang tidak valid.");
+        setError("Kode atau ID tidak valid.");
         setIsLoading(false);
         return;
       }
@@ -60,21 +65,38 @@ const PublicInventoryDetailPage = () => {
       try {
         const decodedParam = decodeURIComponent(id).trim();
         let foundItem: InventoryItem | null = null;
-        let foundId = decodedParam;
+        let foundCollection = "items";
 
-        // 1. Try direct fetch by ID
-        const directSnapshot = await get(ref(database, `inventory/items/${decodedParam}`));
+        const isAsetTetapRoute = itemType === "aset-tetap" || window.location.pathname.includes("aset-tetap");
+        const primaryCollection = isAsetTetapRoute ? "fixedAssets" : "items";
+        const secondaryCollection = isAsetTetapRoute ? "items" : "fixedAssets";
+
+        // 1. Try direct fetch in primary collection
+        let directSnapshot = await get(ref(database, `inventory/${primaryCollection}/${decodedParam}`));
         if (directSnapshot.exists()) {
           foundItem = {
             ...directSnapshot.val(),
             id: decodedParam,
           };
+          foundCollection = primaryCollection;
         } else {
-          // 2. Search through all items by item.code or item.id
-          const allSnapshot = await get(ref(database, "inventory/items"));
-          if (allSnapshot.exists()) {
-            const allItems = allSnapshot.val();
-            for (const [key, val] of Object.entries<any>(allItems)) {
+          // 2. Try direct fetch in secondary collection
+          directSnapshot = await get(ref(database, `inventory/${secondaryCollection}/${decodedParam}`));
+          if (directSnapshot.exists()) {
+            foundItem = {
+              ...directSnapshot.val(),
+              id: decodedParam,
+            };
+            foundCollection = secondaryCollection;
+          }
+        }
+
+        // 3. Search primary collection by code or id
+        if (!foundItem) {
+          const primarySnapshot = await get(ref(database, `inventory/${primaryCollection}`));
+          if (primarySnapshot.exists()) {
+            const all = primarySnapshot.val();
+            for (const [key, val] of Object.entries<any>(all)) {
               if (
                 key === decodedParam ||
                 val.code?.trim().toLowerCase() === decodedParam.toLowerCase() ||
@@ -84,7 +106,29 @@ const PublicInventoryDetailPage = () => {
                   ...val,
                   id: key,
                 };
-                foundId = key;
+                foundCollection = primaryCollection;
+                break;
+              }
+            }
+          }
+        }
+
+        // 4. Search secondary collection by code or id
+        if (!foundItem) {
+          const secondarySnapshot = await get(ref(database, `inventory/${secondaryCollection}`));
+          if (secondarySnapshot.exists()) {
+            const all = secondarySnapshot.val();
+            for (const [key, val] of Object.entries<any>(all)) {
+              if (
+                key === decodedParam ||
+                val.code?.trim().toLowerCase() === decodedParam.toLowerCase() ||
+                val.id === decodedParam
+              ) {
+                foundItem = {
+                  ...val,
+                  id: key,
+                };
+                foundCollection = secondaryCollection;
                 break;
               }
             }
@@ -93,7 +137,7 @@ const PublicInventoryDetailPage = () => {
 
         if (!foundItem) {
           if (isMounted) {
-            setError(`Barang dengan kode atau ID "${decodedParam}" tidak ditemukan.`);
+            setError(`Data aset dengan kode atau ID "${decodedParam}" tidak ditemukan.`);
             setIsLoading(false);
           }
           return;
@@ -101,6 +145,7 @@ const PublicInventoryDetailPage = () => {
 
         if (isMounted) {
           setItem(foundItem);
+          setIsFixedAsset(foundCollection === "fixedAssets");
 
           // Fetch Room Name if roomId exists
           if (foundItem.roomId) {
@@ -120,9 +165,9 @@ const PublicInventoryDetailPage = () => {
           setQrDataUrl(qrUrl);
         }
       } catch (err) {
-        console.error("Gagal memuat detail barang:", err);
+        console.error("Gagal memuat detail aset:", err);
         if (isMounted) {
-          setError("Gagal memuat data barang. Periksa koneksi internet Anda.");
+          setError("Gagal memuat data. Periksa koneksi internet Anda.");
         }
       } finally {
         if (isMounted) {
@@ -136,7 +181,7 @@ const PublicInventoryDetailPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, itemType]);
 
   const handleCopyLink = async () => {
     try {
@@ -192,7 +237,7 @@ const PublicInventoryDetailPage = () => {
           <div className="pt-2 flex flex-col gap-2 sm:flex-row justify-center">
             {user ? (
               <Button asChild className="w-full sm:w-auto">
-                <Link to="/inventaris">
+                <Link to={isFixedAsset ? "/aset-tetap" : "/inventaris"}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Kembali ke Dashboard
                 </Link>
@@ -211,7 +256,7 @@ const PublicInventoryDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/20 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-foreground py-6 px-4 sm:py-10">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-sky-50/20 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-foreground py-6 px-4 sm:py-10 overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Top Navbar / Header */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
@@ -223,19 +268,21 @@ const PublicInventoryDetailPage = () => {
               <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
                 Sistem Inventaris Sarpras
                 <span className="text-[10px] uppercase font-semibold tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400 px-2 py-0.5 rounded-full">
-                  Publik
+                  {isFixedAsset ? "Aset Tetap" : "Publik"}
                 </span>
               </h1>
-              <p className="text-xs text-muted-foreground">Informasi Validasi & Spesifikasi Aset Sekolah</p>
+              <p className="text-xs text-muted-foreground">
+                {isFixedAsset ? "Informasi Validasi & Spesifikasi Aset Tetap Sekolah" : "Informasi Validasi & Spesifikasi Aset Sekolah"}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {user ? (
               <Button asChild variant="outline" size="sm" className="shadow-sm">
-                <Link to="/inventaris">
+                <Link to={isFixedAsset ? "/aset-tetap" : "/inventaris"}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Dashboard Inventaris
+                  {isFixedAsset ? "Dashboard Aset Tetap" : "Dashboard Inventaris"}
                 </Link>
               </Button>
             ) : (
@@ -337,7 +384,7 @@ const PublicInventoryDetailPage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold flex items-center gap-2">
                   <div className="w-1.5 h-4 bg-orange-500 rounded-full" />
-                  Foto Fisik Barang
+                  {isFixedAsset ? "Foto Aset Tetap" : "Foto Fisik Barang"}
                 </CardTitle>
               </CardHeader>
               <CardContent>

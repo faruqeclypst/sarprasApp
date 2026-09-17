@@ -7,14 +7,15 @@ import type { InventoryItem } from "../../types/inventory";
 
 interface ItemPublicLinkSectionProps {
   item: InventoryItem;
+  type?: "inventaris" | "aset-tetap";
 }
 
-export const ItemPublicLinkSection = ({ item }: ItemPublicLinkSectionProps) => {
+export const ItemPublicLinkSection = ({ item, type = "inventaris" }: ItemPublicLinkSectionProps) => {
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
 
   // Use code or id for clean public link
-  const publicUrl = getItemPublicUrl(item.code || item.id);
+  const publicUrl = getItemPublicUrl(item.code || item.id, type);
 
   useEffect(() => {
     let active = true;

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, QrCode } from "lucide-react";
 
 import FixedAssetForm from "../components/forms/FixedAssetForm";
 import type { FixedAssetFormValues } from "../components/forms/schemas";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
 import FixedAssetTable from "../components/tables/FixedAssetTable";
+import { BatchQrCodeDialog } from "../components/inventory/BatchQrCodeDialog";
 import { useInventory } from "../context/InventoryContext";
 import { uploadFixedAssetImage } from "../lib/storage";
 import type { FixedAsset } from "../types/inventory";
@@ -26,6 +27,7 @@ const FixedAssetsPage = () => {
   const [itemToDelete, setItemToDelete] = useState<FixedAsset | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
 
   const closeDialog = () => {
     setIsDialogOpen(false);
@@ -231,12 +233,29 @@ const FixedAssetsPage = () => {
           </Dialog>
           <ImportButton onImport={handleImportInventory} isLoading={isImporting} className="w-full sm:w-auto" />
           <ExportButton onExport={handleExportInventory} className="w-full sm:w-auto" />
+          <Button
+            onClick={() => setIsQrDialogOpen(true)}
+            variant="outline"
+            className="w-full sm:w-auto border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950 font-medium"
+          >
+            <QrCode className="mr-2 h-4 w-4" />
+            QR Code Semua Aset Tetap
+          </Button>
           <Button onClick={handleDownloadTemplate} variant="outline" className="w-full sm:w-auto">
             Download Template
           </Button>
         </div>
       </div>
       <FixedAssetTable items={fixedAssets} rooms={rooms} onEdit={handleEditItem} onDelete={handleDeleteItem} />
+
+      <BatchQrCodeDialog
+        isOpen={isQrDialogOpen}
+        onClose={() => setIsQrDialogOpen(false)}
+        items={fixedAssets}
+        rooms={rooms}
+        type="aset-tetap"
+        title="Generate QR Code Semua Aset Tetap"
+      />
 
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}

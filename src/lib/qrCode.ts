@@ -46,9 +46,10 @@ export function downloadQrCode(dataUrl: string, filename: string = "qrcode.png")
 }
 
 /**
- * Builds standard public detail URL for an inventory item
+ * Builds standard public detail URL for an inventory item or fixed asset
  */
-export function getItemPublicUrl(codeOrId: string): string {
+export function getItemPublicUrl(codeOrId: string, type: "inventaris" | "aset-tetap" = "inventaris"): string {
   const origin = window.location.origin;
-  return `${origin}/publik/inventaris/${encodeURIComponent(codeOrId)}`;
+  const path = type === "aset-tetap" ? "aset-tetap" : "inventaris";
+  return `${origin}/publik/${path}/${encodeURIComponent(codeOrId)}`;
 }

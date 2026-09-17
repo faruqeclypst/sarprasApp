@@ -37,7 +37,9 @@ const App = () => {
             <Routes>
               {/* Public routes - accessible without login */}
               <Route path="/publik/inventaris/:id" element={<PublicInventoryDetailPage />} />
+              <Route path="/publik/aset-tetap/:id" element={<PublicInventoryDetailPage itemType="aset-tetap" />} />
               <Route path="/p/inventaris/:id" element={<PublicInventoryDetailPage />} />
+              <Route path="/p/aset-tetap/:id" element={<PublicInventoryDetailPage itemType="aset-tetap" />} />
               <Route path="/p/:id" element={<PublicInventoryDetailPage />} />
               <Route path="/barang/:id" element={<PublicInventoryDetailPage />} />
 
